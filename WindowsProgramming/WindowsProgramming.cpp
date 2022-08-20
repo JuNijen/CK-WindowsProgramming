@@ -65,8 +65,19 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	{
 	case WM_PAINT:
 		hdc = BeginPaint(hWnd, &ps);
-		MoveToEx(hdc, 0, 0, NULL);
-		LineTo(hdc, 300, 300);
+		Rectangle(hdc, 200, 200, 400, 400);
+		Ellipse(hdc, 200, 200, 400, 400);
+
+		MoveToEx(hdc, 300, 400, NULL);
+		LineTo(hdc, 300, 500);
+
+		Rectangle(hdc, 200, 500, 400, 600);
+
+		MoveToEx(hdc, 600, 200, NULL);
+		LineTo(hdc, 500, 400);
+		LineTo(hdc, 700, 400);
+		LineTo(hdc, 600, 200);
+
 
 		EndPaint(hWnd, &ps);
 		return 0;
