@@ -57,31 +57,75 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	HDC hdc;
 	PAINTSTRUCT ps;
-
-	RECT rt = { 50, 50, 400, 400 };
-
+	HBRUSH MyBrush;
 
 	switch (message)
 	{
 	case WM_PAINT:
 		hdc = BeginPaint(hWnd, &ps);
-		Rectangle(hdc, 200, 200, 400, 400);
-		Ellipse(hdc, 200, 200, 400, 400);
 
-		MoveToEx(hdc, 300, 400, NULL);
-		LineTo(hdc, 300, 500);
-
-		Rectangle(hdc, 200, 500, 400, 600);
-
-		MoveToEx(hdc, 600, 200, NULL);
-		LineTo(hdc, 500, 400);
-		LineTo(hdc, 700, 400);
-		LineTo(hdc, 600, 200);
-
+		Rectangle(hdc, 150, 100, 200, 150); //up
+		Rectangle(hdc, 100, 150, 150, 200); //left
+		Rectangle(hdc, 200, 150, 250, 200); //right
+		Rectangle(hdc, 150, 200, 200, 250); //down
 
 		EndPaint(hWnd, &ps);
 		return 0;
 
+	case WM_KEYDOWN:
+		MyBrush = (HBRUSH)GetStockObject(GRAY_BRUSH);
+		hdc = BeginPaint(hWnd, &ps);
+
+
+		switch (wParam)
+		{
+		case VK_UP:
+			Rectangle(hdc, 150, 100, 200, 150); //up
+
+			break;
+		case VK_LEFT:
+			Rectangle(hdc, 100, 150, 150, 200); //left
+
+			break;
+		case VK_RIGHT:
+			Rectangle(hdc, 200, 150, 250, 200); //right
+
+			break;
+		case VK_DOWN:
+			Rectangle(hdc, 150, 200, 200, 250); //down
+
+			break;
+		}
+		InvalidateRect(hWnd, NULL, TRUE); // 무효화 영역 다시 그리기
+		return 0;
+
+	case WM_KEYUP:
+		MyBrush = (HBRUSH)GetStockObject(WHITE_BRUSH);
+		hdc = BeginPaint(hWnd, &ps);
+
+
+		switch (wParam)
+		{
+		case VK_UP:
+			TextOut(hdc, 175, 125, "UP", 2);
+
+			break;
+		case VK_LEFT:
+			Rectangle(hdc, 100, 150, 150, 200); //left
+
+			break;
+		case VK_RIGHT:
+			Rectangle(hdc, 200, 150, 250, 200); //right
+
+			break;
+		case VK_DOWN:
+			Rectangle(hdc, 150, 200, 200, 250); //down
+
+			break;
+		}
+		InvalidateRect(hWnd, NULL, TRUE); // 무효화 영역 다시 그리기
+
+		return 0;
 
 	case WM_DESTROY:
 		PostQuitMessage(0);	// WM_QUIT 메세지를 메시지큐에 넣는다.
