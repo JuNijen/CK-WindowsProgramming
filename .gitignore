@@ -1,7 +1,8 @@
 /.vs
 /Debug
 /Release
-/Project1
+/Project1/Debug
+/Project1/Release
 
 *db
 *obj
