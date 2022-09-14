@@ -24,7 +24,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmd
 	WndClass.style = CS_HREDRAW | CS_VREDRAW;
 	RegisterClass(&WndClass);
 
-	hWnd = CreateWindow(lpszClass, lpszClass, WS_OVERLAPPEDWINDOW|WS_VSCROLL,
+	hWnd = CreateWindow(lpszClass, lpszClass, WS_OVERLAPPEDWINDOW | WS_VSCROLL,
 		CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
 		NULL, (HMENU)NULL, hInstance, NULL);
 
@@ -46,12 +46,19 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 	static TCHAR str[256];
 	int len = 0;
 
-	switch (iMessage) 
+	switch (iMessage)
 	{
 	case WM_CHAR:
-		len = lstrlen(str);
-		str[len] = (TCHAR)wParam;
-		str[len + 1] = 0;
+		if ((TCHAR)wParam == ' ')
+		{
+			str[0] = 0;
+		}
+		else
+		{
+			len = lstrlen(str);
+			str[len] = (TCHAR)wParam;
+			str[len + 1] = 0;
+		}
 
 		InvalidateRect(hWnd, NULL, FALSE);
 		return 0;
