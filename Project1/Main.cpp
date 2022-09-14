@@ -15,7 +15,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmd
 	WndClass.cbClsExtra = 0; // 윈도우 클래스 데이터 예약 영역
 	WndClass.cbWndExtra = 0; // 윈도우 데이터 예약 영역
 
-	WndClass.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
+	WndClass.hbrBackground = (HBRUSH)GetStockObject(WHITE_BRUSH);
 	WndClass.hCursor = LoadCursor(NULL, IDC_NO);
 	WndClass.hIcon = LoadIcon(NULL, IDI_APPLICATION);
 	WndClass.hInstance = hInstance;
@@ -63,44 +63,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 	switch (message)
 	{
-		//case WM_KEYDOWN:
-		//	switch (wParam) 
-		//	{
-		//	case VK_LEFT:
-		//		x -= 8;
-		//		break;
-		//	case VK_RIGHT:
-		//		x += 8;
-		//		break;
-		//	case VK_UP:
-		//		y -= 8;
-		//		break;
-		//	case VK_DOWN:
-		//		y += 8;
-		//		break;
-		//	case ' ':
-		//		if (cPrint == 'A')
-		//		{
-		//			cPrint = 'Z';
-		//		}
-		//		else
-		//		{
-		//			cPrint = 'A';
-		//		}
-		//		break;
-		//	}
-		//	InvalidateRect(hWnd, NULL, FALSE);
-		//	return 0;
-
-
 	case WM_PAINT:
 		hdc = BeginPaint(hWnd, &ps);
-
-		int i;
-		for (i = 0; i < 1000; i++)
-		{
-			SetPixel(hdc, rand() % 400, rand() % 400, RGB(255, 0, 0));
-		}
+		MoveToEx(hdc, 0, 0, NULL);
+		LineTo(hdc, 300, 300);
 
 		EndPaint(hWnd, &ps);
 		return 0;
