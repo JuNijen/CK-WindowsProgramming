@@ -43,30 +43,46 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 	HDC hdc;
 	PAINTSTRUCT ps;
 
-	static TCHAR str[256];
-	int len = 0;
+	static int x = 100;
+	static int y = 100;
+	static WCHAR cPrint = 'A';
+
 
 	switch (iMessage)
 	{
-	case WM_CHAR:
-		if ((TCHAR)wParam == ' ')
+	case WM_KEYDOWN:
+		switch (wParam) 
 		{
-			str[0] = 0;
+		case VK_LEFT:
+			x -= 8;
+			break;
+		case VK_RIGHT:
+			x += 8;
+			break;
+		case VK_UP:
+			y -= 8;
+			break;
+		case VK_DOWN:
+			y += 8;
+			break;
+		case ' ':
+			if (cPrint == 'A')
+			{
+				cPrint = 'Z';
+			}
+			else
+			{
+				cPrint = 'A';
+			}
+			break;
 		}
-		else
-		{
-			len = lstrlen(str);
-			str[len] = (TCHAR)wParam;
-			str[len + 1] = 0;
-		}
-
 		InvalidateRect(hWnd, NULL, FALSE);
 		return 0;
 
 
 	case WM_PAINT:
 		hdc = BeginPaint(hWnd, &ps);
-		TextOut(hdc, 100, 100, str, lstrlen(str));
+		TextOut(hdc, x, y, &cPrint, 1);
 
 		EndPaint(hWnd, &ps);
 		return 0;
