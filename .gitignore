@@ -1,2 +1,10 @@
 *.jfm
 /.vs/Project1/v16/Browse.VC.opendb
+
+/v16
+/Debug
+/Release
+/Project1
+
+*.pdb
+*.log
