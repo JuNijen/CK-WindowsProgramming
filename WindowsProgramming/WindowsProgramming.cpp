@@ -53,28 +53,110 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmd
 
 
 // WndProc에서 각종 이벤트 진행.
-LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 {
 	HDC hdc;
 	PAINTSTRUCT ps;
-	HBRUSH MyPen, OldPen;
+	HBRUSH MyBrush, OldBrush;
+	HPEN MyPen, OldPen;
+	bool isPressed[4];
 
-	switch (message)
+	int buttonPosition[4][2] =
+	{
+		{150, 100},
+		{100, 150},
+		{200, 150},
+		{150, 200}
+	};
+
+	enum KEY
+	{
+		KEY_UP = 0,
+		KEY_LEFT = 1,
+		KEY_RIGHT = 2,
+		KEY_DOWN = 3,
+	};
+
+	switch (iMessage)
 	{
 	case WM_PAINT:
 		hdc = BeginPaint(hWnd, &ps);
+		Rectangle(hdc, 150, 100, 200, 150); //up
+		Rectangle(hdc, 100, 150, 150, 200); //left
+		Rectangle(hdc, 200, 150, 250, 200); //right
+		Rectangle(hdc, 150, 200, 200, 250); //down
 
-		MyPen = CreatePen(PS SOLID, 5, RGB(255, 0, 255));
-		OldPen = (HPEN)SelectObject(hdc, Mypen)
+		TextOut(hdc, 165, 120, TEXT("UP"), 2);
+		TextOut(hdc, 115, 170, TEXT("LEFT"), 4);
+		TextOut(hdc, 215, 170, TEXT("RIGHT"), 5);
+		TextOut(hdc, 165, 220, TEXT("DOWN"), 4);
+
 
 		EndPaint(hWnd, &ps);
 		return 0;
 
+	case WM_KEYDOWN:
+		hdc = BeginPaint(hWnd, &ps);
+		MyBrush = (HBRUSH)CreateSolidBrush(RGB(255, 0, 0));
+		OldBrush = (HBRUSH)SelectObject(hdc, MyBrush);
+		SelectObject(hdc, OldBrush);
+
+		hdc = BeginPaint(hWnd, &ps);
+
+		switch (wParam)
+		{
+		case VK_UP:
+			TextOut(hdc, 165, 120, TEXT("UUP"), 2);
+			Rectangle(hdc, 100, 100, 200, 150); //up
+			break;
+		case VK_LEFT:
+			Rectangle(hdc, 100, 150, 150, 200); //left
+			break;
+		case VK_RIGHT:
+			Rectangle(hdc, 200, 150, 250, 200); //right
+			break;
+		case VK_DOWN:
+			Rectangle(hdc, 150, 200, 200, 250); //down			
+			break;
+		}
+		InvalidateRect(hWnd, NULL, TRUE); // 무효화 영역 다시 그리기
+		return 0;
+
+	case WM_KEYUP:
+		MyBrush = (HBRUSH)GetStockObject(WHITE_BRUSH);
+		hdc = BeginPaint(hWnd, &ps);
+
+
+		switch (wParam)
+		{
+		case VK_UP:
+			TextOut(hdc, 165, 120, TEXT("UUP"), 2);
+			break;
+
+		case VK_LEFT:
+			Rectangle(hdc, 100, 150, 150, 200); //left
+			break;
+
+		case VK_RIGHT:
+			Rectangle(hdc, 200, 150, 250, 200); //right
+			break;
+
+		case VK_DOWN:
+			Rectangle(hdc, 150, 200, 200, 250); //down
+			break;
+
+		}
+		InvalidateRect(hWnd, NULL, TRUE); // 무효화 영역 다시 그리기
+
+		return 0;
 	case WM_DESTROY:
+		//		DeleteObject(MyBrush);
+		//		DeleteObject(MyPen);
+
 		PostQuitMessage(0);	// WM_QUIT 메세지를 메시지큐에 넣는다.
 		return 0;			// 직접 사용자가 처리했을 때 0을 돌려주어야 한다.
 	}
 
 	// WndProc에서 처리하지 않은 나머지 메세지들은 윈도우즈 운영체제에게 맡긴다.
-	return (DefWindowProc(hWnd, message, wParam, lParam));
+	return (DefWindowProc(hWnd, iMessage, wParam, lParam));
 }
