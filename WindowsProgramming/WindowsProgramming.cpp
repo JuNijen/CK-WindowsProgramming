@@ -57,74 +57,17 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	HDC hdc;
 	PAINTSTRUCT ps;
-	HBRUSH MyBrush;
+	HBRUSH MyPen, OldPen;
 
 	switch (message)
 	{
 	case WM_PAINT:
 		hdc = BeginPaint(hWnd, &ps);
 
-		Rectangle(hdc, 150, 100, 200, 150); //up
-		Rectangle(hdc, 100, 150, 150, 200); //left
-		Rectangle(hdc, 200, 150, 250, 200); //right
-		Rectangle(hdc, 150, 200, 200, 250); //down
+		MyPen = CreatePen(PS SOLID, 5, RGB(255, 0, 255));
+		OldPen = (HPEN)SelectObject(hdc, Mypen)
 
 		EndPaint(hWnd, &ps);
-		return 0;
-
-	case WM_KEYDOWN:
-		MyBrush = (HBRUSH)GetStockObject(GRAY_BRUSH);
-		hdc = BeginPaint(hWnd, &ps);
-
-
-		switch (wParam)
-		{
-		case VK_UP:
-			Rectangle(hdc, 150, 100, 200, 150); //up
-
-			break;
-		case VK_LEFT:
-			Rectangle(hdc, 100, 150, 150, 200); //left
-
-			break;
-		case VK_RIGHT:
-			Rectangle(hdc, 200, 150, 250, 200); //right
-
-			break;
-		case VK_DOWN:
-			Rectangle(hdc, 150, 200, 200, 250); //down
-
-			break;
-		}
-		InvalidateRect(hWnd, NULL, TRUE); // 무효화 영역 다시 그리기
-		return 0;
-
-	case WM_KEYUP:
-		MyBrush = (HBRUSH)GetStockObject(WHITE_BRUSH);
-		hdc = BeginPaint(hWnd, &ps);
-
-
-		switch (wParam)
-		{
-		case VK_UP:
-			TextOut(hdc, 175, 125, "UP", 2);
-
-			break;
-		case VK_LEFT:
-			Rectangle(hdc, 100, 150, 150, 200); //left
-
-			break;
-		case VK_RIGHT:
-			Rectangle(hdc, 200, 150, 250, 200); //right
-
-			break;
-		case VK_DOWN:
-			Rectangle(hdc, 150, 200, 200, 250); //down
-
-			break;
-		}
-		InvalidateRect(hWnd, NULL, TRUE); // 무효화 영역 다시 그리기
-
 		return 0;
 
 	case WM_DESTROY:
