@@ -60,56 +60,45 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 	HBRUSH MyBrush, OldBrush;
 	HPEN MyPen, OldPen;
 
-	enum E_SHAPE
-	{
-		E_SHAPE_RECT = '1',
-		E_SHAPE_CIRCLE = '2',
-		E_SHAPE_TRIANGLE = '3',
-	};
-	static TCHAR userNum = 0;
-	POINT pt[3] = { {125,100},{100,150},{150,150} };
+	static int x = 50, y = 50;
 
 
 	switch (iMessage)
 	{
+	case WM_CREATE:
+		x = 20; y = 20;
+		return 0;
+
+
+
 	case WM_PAINT:
 		hdc = BeginPaint(hWnd, &ps);
-		TextOut(hdc, 50, 50, TEXT("1. 사각형, 2: 원, 3: 삼각형"), 20);
 
 		MyPen = CreatePen(PS_SOLID, 3, RGB(255, 0, 0));
 		OldPen = (HPEN)SelectObject(hdc, MyPen);
-
 		MyBrush = CreateSolidBrush(RGB(255, 0, 255));
 		OldBrush = (HBRUSH)SelectObject(hdc, MyBrush);
 
-		switch (userNum)
-		{
-		case E_SHAPE_RECT:
-			Rectangle(hdc, 100, 100, 150, 150);
-			break;
-		case E_SHAPE_CIRCLE:
-			Ellipse(hdc, 100, 100, 150, 150);
-			break;
-		case E_SHAPE_TRIANGLE:
-			Polygon(hdc, pt, 3);
-			break;
-		}
+		Ellipse(hdc, x - 10, y - 10, x + 10, y + 10);
 
 		EndPaint(hWnd, &ps);
 		return 0;
 
 
-	case WM_CHAR:
+	case WM_KEYDOWN:
 		switch ((TCHAR)wParam)
 		{
-		case E_SHAPE_RECT:
-			userNum = E_SHAPE_RECT;
+		case VK_UP:
+			y -= 10;
 			break;
-		case '2':
-			userNum = '2';
+		case VK_LEFT:
+			x -= 10;
 			break;
-		case '3':
-			userNum = '3';
+		case VK_RIGHT:
+			x += 10;
+			break;
+		case VK_DOWN:
+			y += 10;
 			break;
 		}
 		InvalidateRect(hWnd, NULL, TRUE); // 무효화 영역 다시 그리기
@@ -117,9 +106,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 
 
 	case WM_DESTROY:
-		//		DeleteObject(MyBrush);
-		//		DeleteObject(MyPen);
-
 		PostQuitMessage(0);	// WM_QUIT 메세지를 메시지큐에 넣는다.
 		return 0;			// 직접 사용자가 처리했을 때 0을 돌려주어야 한다.
 	}
