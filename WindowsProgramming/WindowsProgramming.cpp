@@ -53,28 +53,77 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmd
 
 
 // WndProc에서 각종 이벤트 진행.
-LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 {
 	HDC hdc;
 	PAINTSTRUCT ps;
-	HBRUSH MyPen, OldPen;
+	HBRUSH MyBrush, OldBrush;
+	HPEN MyPen, OldPen;
 
-	switch (message)
+	enum E_SHAPE
+	{
+		E_SHAPE_RECT = '1',
+		E_SHAPE_CIRCLE = '2',
+		E_SHAPE_TRIANGLE = '3',
+	};
+	static TCHAR userNum = 0;
+	POINT pt[3] = { {125,100},{100,150},{150,150} };
+
+
+	switch (iMessage)
 	{
 	case WM_PAINT:
 		hdc = BeginPaint(hWnd, &ps);
+		TextOut(hdc, 50, 50, TEXT("1. 사각형, 2: 원, 3: 삼각형"), 20);
 
-		MyPen = CreatePen(PS SOLID, 5, RGB(255, 0, 255));
-		OldPen = (HPEN)SelectObject(hdc, Mypen)
+		MyPen = CreatePen(PS_SOLID, 3, RGB(255, 0, 0));
+		OldPen = (HPEN)SelectObject(hdc, MyPen);
+
+		MyBrush = CreateSolidBrush(RGB(255, 0, 255));
+		OldBrush = (HBRUSH)SelectObject(hdc, MyBrush);
+
+		switch (userNum)
+		{
+		case E_SHAPE_RECT:
+			Rectangle(hdc, 100, 100, 150, 150);
+			break;
+		case E_SHAPE_CIRCLE:
+			Ellipse(hdc, 100, 100, 150, 150);
+			break;
+		case E_SHAPE_TRIANGLE:
+			Polygon(hdc, pt, 3);
+			break;
+		}
 
 		EndPaint(hWnd, &ps);
 		return 0;
 
+
+	case WM_CHAR:
+		switch ((TCHAR)wParam)
+		{
+		case E_SHAPE_RECT:
+			userNum = E_SHAPE_RECT;
+			break;
+		case '2':
+			userNum = '2';
+			break;
+		case '3':
+			userNum = '3';
+			break;
+		}
+		InvalidateRect(hWnd, NULL, TRUE); // 무효화 영역 다시 그리기
+		return 0;
+
+
 	case WM_DESTROY:
+		//		DeleteObject(MyBrush);
+		//		DeleteObject(MyPen);
+
 		PostQuitMessage(0);	// WM_QUIT 메세지를 메시지큐에 넣는다.
 		return 0;			// 직접 사용자가 처리했을 때 0을 돌려주어야 한다.
 	}
 
 	// WndProc에서 처리하지 않은 나머지 메세지들은 윈도우즈 운영체제에게 맡긴다.
-	return (DefWindowProc(hWnd, message, wParam, lParam));
+	return (DefWindowProc(hWnd, iMessage, wParam, lParam));
 }
