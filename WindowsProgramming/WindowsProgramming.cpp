@@ -59,7 +59,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 	PAINTSTRUCT ps;
 	HBRUSH MyBrush, OldBrush;
 	HPEN MyPen, OldPen;
-	bool isPressed[4];
+	static bool isPressed[4] = { false, };
 
 	int buttonPosition[4][2] =
 	{
@@ -81,70 +81,80 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 	{
 	case WM_PAINT:
 		hdc = BeginPaint(hWnd, &ps);
+		MyBrush = (HBRUSH)CreateSolidBrush(RGB(255, 0, 0));
+		OldBrush = (HBRUSH)SelectObject(hdc, MyBrush);
+		SelectObject(hdc, OldBrush);
+
+		(isPressed[KEY_UP]) ? SelectObject(hdc, MyBrush) : SelectObject(hdc, OldBrush);
 		Rectangle(hdc, 150, 100, 200, 150); //up
+		(isPressed[KEY_UP]) ? TextOut(hdc, 165, 120, TEXT("UP"), 2) : TextOut(hdc, 165, 120, TEXT("  "), 2);
+
+		(isPressed[KEY_LEFT]) ? SelectObject(hdc, MyBrush) : SelectObject(hdc, OldBrush);
 		Rectangle(hdc, 100, 150, 150, 200); //left
+		(isPressed[KEY_LEFT]) ? TextOut(hdc, 108, 170, TEXT("LEFT"), 4) : TextOut(hdc, 108, 170, TEXT("    "), 4);
+
+		(isPressed[KEY_RIGHT]) ? SelectObject(hdc, MyBrush) : SelectObject(hdc, OldBrush);
 		Rectangle(hdc, 200, 150, 250, 200); //right
+		(isPressed[KEY_RIGHT]) ? TextOut(hdc, 205, 170, TEXT("RIGHT"), 5) : TextOut(hdc, 205, 170, TEXT("     "), 5);
+
+		(isPressed[KEY_DOWN]) ? SelectObject(hdc, MyBrush) : SelectObject(hdc, OldBrush);
 		Rectangle(hdc, 150, 200, 200, 250); //down
+		(isPressed[KEY_DOWN]) ? TextOut(hdc, 153, 220, TEXT("DOWN"), 4) : TextOut(hdc, 153, 220, TEXT("    "), 4);
 
-		TextOut(hdc, 165, 120, TEXT("UP"), 2);
-		TextOut(hdc, 115, 170, TEXT("LEFT"), 4);
-		TextOut(hdc, 215, 170, TEXT("RIGHT"), 5);
-		TextOut(hdc, 165, 220, TEXT("DOWN"), 4);
 
+		//TextOut(hdc, 165, 120, TEXT("UP"), 2);
+		//TextOut(hdc, 115, 170, TEXT("LEFT"), 4);
+		//TextOut(hdc, 215, 170, TEXT("RIGHT"), 5);
+		//TextOut(hdc, 165, 220, TEXT("DOWN"), 4);
 
 		EndPaint(hWnd, &ps);
 		return 0;
 
 	case WM_KEYDOWN:
-		hdc = BeginPaint(hWnd, &ps);
-		MyBrush = (HBRUSH)CreateSolidBrush(RGB(255, 0, 0));
-		OldBrush = (HBRUSH)SelectObject(hdc, MyBrush);
-		SelectObject(hdc, OldBrush);
+		//hdc = BeginPaint(hWnd, &ps);
+		//MyBrush = (HBRUSH)CreateSolidBrush(RGB(255, 0, 0));
+		//OldBrush = (HBRUSH)SelectObject(hdc, MyBrush);
+		//SelectObject(hdc, OldBrush);
 
-		hdc = BeginPaint(hWnd, &ps);
+		//hdc = BeginPaint(hWnd, &ps);
 
 		switch (wParam)
 		{
 		case VK_UP:
-			TextOut(hdc, 165, 120, TEXT("UUP"), 2);
-			Rectangle(hdc, 100, 100, 200, 150); //up
+			isPressed[KEY_UP] = true;
 			break;
 		case VK_LEFT:
-			Rectangle(hdc, 100, 150, 150, 200); //left
+			isPressed[KEY_LEFT] = true;
 			break;
 		case VK_RIGHT:
-			Rectangle(hdc, 200, 150, 250, 200); //right
+			isPressed[KEY_RIGHT] = true;
 			break;
 		case VK_DOWN:
-			Rectangle(hdc, 150, 200, 200, 250); //down			
+			isPressed[KEY_DOWN] = true;
 			break;
 		}
 		InvalidateRect(hWnd, NULL, TRUE); // 무효화 영역 다시 그리기
 		return 0;
 
 	case WM_KEYUP:
-		MyBrush = (HBRUSH)GetStockObject(WHITE_BRUSH);
-		hdc = BeginPaint(hWnd, &ps);
+		//MyBrush = (HBRUSH)GetStockObject(WHITE_BRUSH);
+		//hdc = BeginPaint(hWnd, &ps);
 
 
 		switch (wParam)
 		{
 		case VK_UP:
-			TextOut(hdc, 165, 120, TEXT("UUP"), 2);
+			isPressed[KEY_UP] = false;
 			break;
-
 		case VK_LEFT:
-			Rectangle(hdc, 100, 150, 150, 200); //left
+			isPressed[KEY_LEFT] = false;
 			break;
-
 		case VK_RIGHT:
-			Rectangle(hdc, 200, 150, 250, 200); //right
+			isPressed[KEY_RIGHT] = false;
 			break;
-
 		case VK_DOWN:
-			Rectangle(hdc, 150, 200, 200, 250); //down
+			isPressed[KEY_DOWN] = false;
 			break;
-
 		}
 		InvalidateRect(hWnd, NULL, TRUE); // 무효화 영역 다시 그리기
 
