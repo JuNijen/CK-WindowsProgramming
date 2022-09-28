@@ -60,13 +60,19 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 	HBRUSH MyBrush, OldBrush;
 	HPEN MyPen, OldPen;
 
+	static RECT rectView;
 	static int x = 50, y = 50;
+	static bool bIsPushed = false;
+
+	const int radius = 20;
+	const int movement = 10;
 
 
 	switch (iMessage)
 	{
 	case WM_CREATE:
-		x = 20; y = 20;
+		x = radius; y = radius;
+		GetClientRect(hWnd, &rectView);
 		return 0;
 
 
@@ -74,35 +80,63 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 	case WM_PAINT:
 		hdc = BeginPaint(hWnd, &ps);
 
-		MyPen = CreatePen(PS_SOLID, 3, RGB(255, 0, 0));
+		(bIsPushed) ? MyPen = CreatePen(PS_SOLID, 3, RGB(50, 50, 50)) : MyPen = CreatePen(PS_SOLID, 3, RGB(255, 0, 0));
 		OldPen = (HPEN)SelectObject(hdc, MyPen);
-		MyBrush = CreateSolidBrush(RGB(255, 0, 255));
+
+		(bIsPushed) ? MyBrush = CreateSolidBrush(RGB(50, 50, 50)) : MyBrush = CreateSolidBrush(RGB(255, 0, 255));
 		OldBrush = (HBRUSH)SelectObject(hdc, MyBrush);
 
-		Ellipse(hdc, x - 10, y - 10, x + 10, y + 10);
+
+		Ellipse(hdc, x - radius/2, y - radius/2, x + radius/2, y + radius/2);
 
 		EndPaint(hWnd, &ps);
 		return 0;
+
 
 
 	case WM_KEYDOWN:
 		switch ((TCHAR)wParam)
 		{
 		case VK_UP:
-			y -= 10;
+			bIsPushed = true;
+			if (y - movement > rectView.top)
+			{
+				y -= movement;
+			}
 			break;
 		case VK_LEFT:
-			x -= 10;
+			bIsPushed = true;
+			if (x - movement > rectView.left)
+			{
+				x -= movement;
+			}
 			break;
 		case VK_RIGHT:
-			x += 10;
+			bIsPushed = true;
+			if (y + movement < rectView.right)
+			{
+				x += movement;
+			}
 			break;
 		case VK_DOWN:
-			y += 10;
+			bIsPushed = true;
+			if (y + movement < rectView.bottom)
+			{
+				y += movement;
+			}
 			break;
 		}
 		InvalidateRect(hWnd, NULL, TRUE); // 무효화 영역 다시 그리기
 		return 0;
+
+
+
+	case WM_KEYUP:
+		bIsPushed = false;
+		InvalidateRect(hWnd, NULL, TRUE); // 무효화 영역 다시 그리기
+
+		return 0;
+
 
 
 	case WM_DESTROY:
