@@ -63,6 +63,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 	static RECT rectView;
 	static int x = 50, y = 50;
 	static bool bIsPushed = false;
+	static bool bIsReturn = false;
+	static bool bIsReverse = false;
 
 	const int radius = 20;
 	const int movement = 10;
@@ -76,6 +78,38 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 		return 0;
 
 
+	case WM_TIMER:
+		//KillTimer(hWnd, 1);
+		if (bIsReturn)
+		{
+			if (!bIsReverse)
+			{
+				if (x + movement < rectView.right)
+				{
+					x += movement;
+				}
+				else if (x + movement >= rectView.right)
+				{
+					bIsReverse = true;
+				}
+			}
+			else
+			{
+				if (x - movement > rectView.left)
+				{
+					x -= movement;
+				}
+				else if (x - movement <= rectView.left)
+				{
+					bIsReverse = false;
+				}
+			}
+			InvalidateRect(hWnd, NULL, TRUE); // 무효화 영역 다시 그리기
+		}
+		//InvalidateRect(hWnd, NULL, TRUE);
+		return 0;
+
+
 
 	case WM_PAINT:
 		hdc = BeginPaint(hWnd, &ps);
@@ -86,8 +120,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 		(bIsPushed) ? MyBrush = CreateSolidBrush(RGB(50, 50, 50)) : MyBrush = CreateSolidBrush(RGB(255, 0, 255));
 		OldBrush = (HBRUSH)SelectObject(hdc, MyBrush);
 
-
-		Ellipse(hdc, x - radius/2, y - radius/2, x + radius/2, y + radius/2);
+		Ellipse(hdc, x - radius / 2, y - radius / 2, x + radius / 2, y + radius / 2);
 
 		EndPaint(hWnd, &ps);
 		return 0;
@@ -124,6 +157,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 			{
 				y += movement;
 			}
+			break;
+		case VK_RETURN:
+			bIsReturn = true;
+			SetTimer(hWnd, 1, 50, NULL);
 			break;
 		}
 		InvalidateRect(hWnd, NULL, TRUE); // 무효화 영역 다시 그리기
