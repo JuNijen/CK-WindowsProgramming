@@ -68,30 +68,30 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 	switch (iMessage)
 	{
 	case WM_CREATE:
-		SetTimer(hWnd, 1, timer_1sec, NULL);
-		SetTimer(hWnd, 2, timer_5sec, NULL);
-		SendMessage(hWnd, WM_TIMER, 1, 0);
+		SetTimer(hWnd, 1, 50, NULL);
 		break;
 
 
 	case WM_TIMER:
-		GetLocalTime(&st);
-		MessageBeep(1);
-		wsprintf(sTime, TEXT("현재 시간은 %d시 %d분 %d초 입니다."), st.wHour, st.wMinute, st.wSecond);
-		InvalidateRect(hWnd, NULL, TRUE);
+		hdc = GetDC(hWnd);
+
+		for (int i = 0; i < 1000; i++) 
+		{
+			SetPixel(hdc, rand() % 500, rand() % 400, RGB(rand() % 256, rand() % 256, rand() % 256));
+		}
+		ReleaseDC(hWnd, hdc);
 		break;
 
 
-	case WM_PAINT:
-		hdc = BeginPaint(hWnd, &ps);
-		TextOut(hdc, pos, pos, sTime, lstrlen(sTime));
-		EndPaint(hWnd, &ps);
+	case WM_LBUTTONDOWN:
+		hdc = GetDC(hWnd);
+		Ellipse(hdc, LOWORD(lParam) - 10, HIWORD(lParam) - 10, LOWORD(lParam) + 10, HIWORD(lParam) + 10);
+		ReleaseDC(hWnd, hdc);
 		break;
 
 
 	case WM_DESTROY:
 		KillTimer(hWnd, 1);
-		KillTimer(hWnd, 2);
 		PostQuitMessage(0);	// WM_QUIT 메세지를 메시지큐에 넣는다.
 		break;			// 직접 사용자가 처리했을 때 0을 돌려주어야 한다.
 	}
