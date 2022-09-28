@@ -57,91 +57,37 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 {
 	HDC hdc;
 	PAINTSTRUCT ps;
-	HBRUSH MyBrush, OldBrush;
-	HPEN MyPen, OldPen;
+	SYSTEMTIME st;
 
-	static RECT rectView;
-	static int x = 50, y = 50;
-	static bool bIsPushed = false;
-
-	const int radius = 20;
-	const int movement = 10;
+	static TCHAR sTime[128];
+	const int sec = 1000;
+	const int pos = 100;
 
 
 	switch (iMessage)
 	{
 	case WM_CREATE:
-		x = radius; y = radius;
-		GetClientRect(hWnd, &rectView);
-		return 0;
+		SetTimer(hWnd, 1, sec, NULL);
+		break;
 
+
+	case WM_TIMER:
+		GetLocalTime(&st);
+		wsprintf(sTime, TEXT("현재 시간은 %d시 %d분 %d초 입니다."), st.wHour, st.wMinute, st.wSecond);
+		InvalidateRect(hWnd, NULL, TRUE);
+		break;
 
 
 	case WM_PAINT:
 		hdc = BeginPaint(hWnd, &ps);
-
-		(bIsPushed) ? MyPen = CreatePen(PS_SOLID, 3, RGB(50, 50, 50)) : MyPen = CreatePen(PS_SOLID, 3, RGB(255, 0, 0));
-		OldPen = (HPEN)SelectObject(hdc, MyPen);
-
-		(bIsPushed) ? MyBrush = CreateSolidBrush(RGB(50, 50, 50)) : MyBrush = CreateSolidBrush(RGB(255, 0, 255));
-		OldBrush = (HBRUSH)SelectObject(hdc, MyBrush);
-
-
-		Ellipse(hdc, x - radius/2, y - radius/2, x + radius/2, y + radius/2);
-
+		TextOut(hdc, pos, pos, sTime, lstrlen(sTime));
 		EndPaint(hWnd, &ps);
-		return 0;
-
-
-
-	case WM_KEYDOWN:
-		switch ((TCHAR)wParam)
-		{
-		case VK_UP:
-			bIsPushed = true;
-			if (y - movement > rectView.top)
-			{
-				y -= movement;
-			}
-			break;
-		case VK_LEFT:
-			bIsPushed = true;
-			if (x - movement > rectView.left)
-			{
-				x -= movement;
-			}
-			break;
-		case VK_RIGHT:
-			bIsPushed = true;
-			if (y + movement < rectView.right)
-			{
-				x += movement;
-			}
-			break;
-		case VK_DOWN:
-			bIsPushed = true;
-			if (y + movement < rectView.bottom)
-			{
-				y += movement;
-			}
-			break;
-		}
-		InvalidateRect(hWnd, NULL, TRUE); // 무효화 영역 다시 그리기
-		return 0;
-
-
-
-	case WM_KEYUP:
-		bIsPushed = false;
-		InvalidateRect(hWnd, NULL, TRUE); // 무효화 영역 다시 그리기
-
-		return 0;
-
+		break;
 
 
 	case WM_DESTROY:
 		PostQuitMessage(0);	// WM_QUIT 메세지를 메시지큐에 넣는다.
-		return 0;			// 직접 사용자가 처리했을 때 0을 돌려주어야 한다.
+		break;			// 직접 사용자가 처리했을 때 0을 돌려주어야 한다.
 	}
 
 	// WndProc에서 처리하지 않은 나머지 메세지들은 윈도우즈 운영체제에게 맡긴다.
