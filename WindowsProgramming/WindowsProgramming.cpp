@@ -93,6 +93,14 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 		InvalidateRect(hWnd, NULL, TRUE);
 		break;
 
+	case WM_MOUSEMOVE:
+		mx = LOWORD(lParam);
+		my = HIWORD(lParam);
+		if (selection) {
+			x = mx; y = my;
+			InvalidateRect(hWnd, NULL, TRUE);
+		}
+		break;
 
 	case WM_DESTROY:
 		PostQuitMessage(0);	// WM_QUIT 메세지를 메시지큐에 넣는다.
