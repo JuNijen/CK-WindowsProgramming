@@ -57,36 +57,33 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 {
 	HDC hdc;
 	PAINTSTRUCT ps;
-	SYSTEMTIME st;
-
-	static TCHAR sTime[128];
-	const int timer_1sec = 1000;
-	const int timer_5sec = 5000;
-	const int pos = 100;
+	static TCHAR str[50];
 
 
 	switch (iMessage)
 	{
 	case WM_CREATE:
-		SetTimer(hWnd, 1, 50, NULL);
-		break;
-
-
-	case WM_TIMER:
-		hdc = GetDC(hWnd);
-
-		for (int i = 0; i < 1000; i++) 
-		{
-			SetPixel(hdc, rand() % 500, rand() % 400, RGB(rand() % 256, rand() % 256, rand() % 256));
-		}
-		ReleaseDC(hWnd, hdc);
 		break;
 
 
 	case WM_LBUTTONDOWN:
-		hdc = GetDC(hWnd);
-		Ellipse(hdc, LOWORD(lParam) - 10, HIWORD(lParam) - 10, LOWORD(lParam) + 10, HIWORD(lParam) + 10);
-		ReleaseDC(hWnd, hdc);
+		lstrcpy(str, TEXT("왼쪽 버튼을 눌렀습니다."));
+		InvalidateRect(hWnd, NULL, TRUE);
+		SetTimer(hWnd, 1, 3000, NULL);
+		break;
+
+
+	case WM_TIMER:
+		KillTimer(hWnd, 1);
+		lstrcpy(str, TEXT(""));
+		InvalidateRect(hWnd, NULL, TRUE);
+		break;
+
+
+	case WM_PAINT:
+		hdc = BeginPaint(hWnd, &ps);
+		TextOut(hdc, 100, 100, str, lstrlen(str));
+		EndPaint(hWnd, &ps);
 		break;
 
 
