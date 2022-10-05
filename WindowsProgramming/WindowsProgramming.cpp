@@ -1,5 +1,5 @@
 ﻿#include "WindowsProgramming.h"
-#include "Mouse.h"
+
 
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 HINSTANCE g_hInst;
@@ -57,46 +57,48 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmd
 LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 {
 	HDC hdc;
-	static int x;
-	static int y;
-	static bool bnowDraw = false;
+	PAINTSTRUCT ps;
+	static RECT rectView;
+	static int x, y;
+	static BOOL selection;
+	int mx, my;
 
 
 	switch (iMessage)
 	{
 	case WM_CREATE:
+		x = 50; y = 50;
+		selection = FALSE;
 		break;
 
 
-	case WM_MOUSEMOVE:
-		if (bnowDraw == true) {
-			hdc = GetDC(hWnd);
-			MoveToEx(hdc, x, y, NULL);
-
-			x = LOWORD(lParam);
-			y = HIWORD(lParam);
-			LineTo(hdc, x, y);
-			ReleaseDC(hWnd, hdc);
-			break;
+	case WM_PAINT:
+		hdc = BeginPaint(hWnd, &ps);
+		if (selection) Rectangle(hdc, x - BSIZE, y - BSIZE, x + BSIZE, y + BSIZE);
+		Ellipse(hdc, x - BSIZE, y - BSIZE, x + BSIZE, y + BSIZE);
+		EndPaint(hWnd, &ps);
+		break;
 
 
 	case WM_LBUTTONDOWN:
-		x = LOWORD(lParam);
-		y - HIWORD(lParam);
-		bnowDraw = true;
+		mx = LOWORD(lParam);
+		my = HIWORD(lParam);
+		if (InCircle(x, y, mx, my)) selection = TRUE;
+		InvalidateRect(hWnd, NULL, TRUE);
 		break;
 
 
 	case WM_LBUTTONUP:
-		bnowDraw = false;
+		selection = FALSE;
+		InvalidateRect(hWnd, NULL, TRUE);
 		break;
 
 
 	case WM_DESTROY:
 		PostQuitMessage(0);	// WM_QUIT 메세지를 메시지큐에 넣는다.
 		break;			// 직접 사용자가 처리했을 때 0을 돌려주어야 한다.
-		}
 	}
+
 
 	// WndProc에서 처리하지 않은 나머지 메세지들은 윈도우즈 운영체제에게 맡긴다.
 	return (DefWindowProc(hWnd, iMessage, wParam, lParam));
