@@ -1,4 +1,5 @@
-﻿#include <windows.h>
+﻿#include "WindowsProgramming.h"
+#include "Mouse.h"
 
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 HINSTANCE g_hInst;
@@ -56,8 +57,9 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmd
 LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 {
 	HDC hdc;
-	PAINTSTRUCT ps;
-	static TCHAR str[50];
+	static int x;
+	static int y;
+	static bool bnowDraw = false;
 
 
 	switch (iMessage)
@@ -66,31 +68,34 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 		break;
 
 
+	case WM_MOUSEMOVE:
+		if (bnowDraw == true) {
+			hdc = GetDC(hWnd);
+			MoveToEx(hdc, x, y, NULL);
+
+			x = LOWORD(lParam);
+			y = HIWORD(lParam);
+			LineTo(hdc, x, y);
+			ReleaseDC(hWnd, hdc);
+			break;
+
+
 	case WM_LBUTTONDOWN:
-		lstrcpy(str, TEXT("왼쪽 버튼을 눌렀습니다."));
-		InvalidateRect(hWnd, NULL, TRUE);
-		SetTimer(hWnd, 1, 3000, NULL);
+		x = LOWORD(lParam);
+		y - HIWORD(lParam);
+		bnowDraw = true;
 		break;
 
 
-	case WM_TIMER:
-		KillTimer(hWnd, 1);
-		lstrcpy(str, TEXT(""));
-		InvalidateRect(hWnd, NULL, TRUE);
-		break;
-
-
-	case WM_PAINT:
-		hdc = BeginPaint(hWnd, &ps);
-		TextOut(hdc, 100, 100, str, lstrlen(str));
-		EndPaint(hWnd, &ps);
+	case WM_LBUTTONUP:
+		bnowDraw = false;
 		break;
 
 
 	case WM_DESTROY:
-		KillTimer(hWnd, 1);
 		PostQuitMessage(0);	// WM_QUIT 메세지를 메시지큐에 넣는다.
 		break;			// 직접 사용자가 처리했을 때 0을 돌려주어야 한다.
+		}
 	}
 
 	// WndProc에서 처리하지 않은 나머지 메세지들은 윈도우즈 운영체제에게 맡긴다.
