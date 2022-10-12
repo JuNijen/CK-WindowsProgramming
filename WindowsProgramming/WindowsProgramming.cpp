@@ -51,6 +51,12 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmd
 	return (int)Message.wParam;
 }
 
+enum CLICK_TYPE
+{
+	CLICK_NONE = 0,
+	CLICK_A,
+	CLICK_B,
+};
 
 
 // WndProc에서 각종 이벤트 진행.
@@ -58,46 +64,88 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 {
 	HDC hdc;
 	PAINTSTRUCT ps;
-	static int x, y;
-	static int mx, my;
-	static BOOL isClick;
+	const int boardX = 8;
+	const int boardY = 4;
+	const int boardSize = 100;
+	static CLICK_TYPE gameBoard[boardX][boardY];
+	static bool checkTurn;
+	int mx, my;
+	HBRUSH currentBrush, oldBrush;
 
 
 	switch (iMessage)
 	{
 	case WM_CREATE:
-		x = 50; y = 50;
-		isClick = FALSE;
+		gameBoard[boardX][boardY] = { CLICK_NONE, };
+		checkTurn = false;
 		break;
 
 
 	case WM_PAINT:
 		hdc = BeginPaint(hWnd, &ps);
-		Ellipse(hdc, x - BSIZE, y - BSIZE, mx + BSIZE, my + BSIZE);
+
+		for (int x = 0; x < boardX; x++) 
+		{
+			for (int y = 0; y < boardY; y++)
+			{
+				// initalize
+				Rectangle(hdc, x*boardSize, y*boardSize, (x + 1)*boardSize, (y + 1)*boardSize);
+				currentBrush = CreateSolidBrush(RGB(255, 255, 255));
+				oldBrush = (HBRUSH)SelectObject(hdc, currentBrush);
+
+				switch (gameBoard[x][y]) 
+				{
+				case CLICK_NONE:
+					continue;
+				case CLICK_A:
+					currentBrush = CreateSolidBrush(RGB(255, 0, 255));
+					oldBrush = (HBRUSH)SelectObject(hdc, currentBrush);
+					break;
+				case CLICK_B:
+					currentBrush = CreateSolidBrush(RGB(0, 0, 255));
+					oldBrush = (HBRUSH)SelectObject(hdc, currentBrush);
+					break;
+				}
+				Ellipse(hdc, x*boardSize, y*boardSize, (x + 1)*boardSize, (y + 1)*boardSize);
+				SelectObject(hdc, oldBrush);
+			}
+		}
+
 		EndPaint(hWnd, &ps);
 		break;
 
 
 	case WM_LBUTTONDOWN:
-		isClick = TRUE;
 		mx = LOWORD(lParam);
 		my = HIWORD(lParam);
+		if (mx / 100 < boardX && my / 100 < boardY)
+		{
+			if (gameBoard[mx / 100][my / 100] == CLICK_NONE)
+			{
+				if (checkTurn) 
+				{
+					gameBoard[mx / 100][my / 100] = CLICK_A;
+					checkTurn = false;
+				}
+				else 
+				{
+					gameBoard[mx / 100][my / 100] = CLICK_B;
+					checkTurn = true;
+				}
+			}
+		}
+		InvalidateRect(hWnd, NULL, TRUE);
 		break;
 
 	case WM_LBUTTONUP:
-		isClick = FALSE;
 		break;
 
 	case WM_MOUSEMOVE:
-		if(isClick)
-		{
-			mx = LOWORD(lParam);
-			my = HIWORD(lParam);
-			InvalidateRect(hWnd, NULL, TRUE);
-		}
 		break;
 
 	case WM_DESTROY:
+		//DeleteObject(currentBrush);
+		//DeleteObject(oldBrush);
 		PostQuitMessage(0);	// WM_QUIT 메세지를 메시지큐에 넣는다.
 		break;						// 직접 사용자가 처리했을 때 0을 돌려주어야 한다.
 	}
