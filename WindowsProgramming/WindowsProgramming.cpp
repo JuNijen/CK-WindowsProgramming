@@ -58,53 +58,48 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 {
 	HDC hdc;
 	PAINTSTRUCT ps;
-	static RECT rectView;
 	static int x, y;
-	static BOOL selection;
-	int mx, my;
+	static int mx, my;
+	static BOOL isClick;
 
 
 	switch (iMessage)
 	{
 	case WM_CREATE:
 		x = 50; y = 50;
-		selection = FALSE;
+		isClick = FALSE;
 		break;
 
 
 	case WM_PAINT:
 		hdc = BeginPaint(hWnd, &ps);
-		if (selection) Rectangle(hdc, x - BSIZE, y - BSIZE, x + BSIZE, y + BSIZE);
-		Ellipse(hdc, x - BSIZE, y - BSIZE, x + BSIZE, y + BSIZE);
+		Ellipse(hdc, x - BSIZE, y - BSIZE, mx + BSIZE, my + BSIZE);
 		EndPaint(hWnd, &ps);
 		break;
 
 
 	case WM_LBUTTONDOWN:
+		isClick = TRUE;
 		mx = LOWORD(lParam);
 		my = HIWORD(lParam);
-		if (InCircle(x, y, mx, my)) selection = TRUE;
-		InvalidateRect(hWnd, NULL, TRUE);
 		break;
 
-
 	case WM_LBUTTONUP:
-		selection = FALSE;
-		InvalidateRect(hWnd, NULL, TRUE);
+		isClick = FALSE;
 		break;
 
 	case WM_MOUSEMOVE:
-		mx = LOWORD(lParam);
-		my = HIWORD(lParam);
-		if (selection) {
-			x = mx; y = my;
+		if(isClick)
+		{
+			mx = LOWORD(lParam);
+			my = HIWORD(lParam);
 			InvalidateRect(hWnd, NULL, TRUE);
 		}
 		break;
 
 	case WM_DESTROY:
 		PostQuitMessage(0);	// WM_QUIT 메세지를 메시지큐에 넣는다.
-		break;			// 직접 사용자가 처리했을 때 0을 돌려주어야 한다.
+		break;						// 직접 사용자가 처리했을 때 0을 돌려주어야 한다.
 	}
 
 
