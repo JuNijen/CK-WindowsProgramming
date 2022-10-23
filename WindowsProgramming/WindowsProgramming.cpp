@@ -51,11 +51,11 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmd
 	return (int)Message.wParam;
 }
 
-enum CLICK_TYPE
+enum TILE_TYPE
 {
-	CLICK_NONE = 0,
-	CLICK_A,
-	CLICK_B,
+	TILE_TYPE_NONE = 0,
+	TILE_TYPE_WALL,
+	TILE_TYPE_PLAYER,
 };
 
 
@@ -65,19 +65,28 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 	HDC hdc;
 	PAINTSTRUCT ps;
 	const int boardX = 8;
-	const int boardY = 4;
-	const int boardSize = 100;
-	static CLICK_TYPE gameBoard[boardX][boardY];
-	static bool checkTurn;
-	int mx, my;
+	const int boardY = 8;
+	const int boardSize = 75;
+	const int wallCount = 10;
+
+	static TILE_TYPE gameBoard[boardX][boardY];
+	static int playerX, playerY;
 	HBRUSH currentBrush, oldBrush;
 
 
 	switch (iMessage)
 	{
 	case WM_CREATE:
-		gameBoard[boardX][boardY] = { CLICK_NONE, };
-		checkTurn = false;
+		gameBoard[boardX][boardY] = { TILE_TYPE_NONE, };
+
+		for (int count = 0; count < wallCount; count++) 
+		{
+			gameBoard[rand() % boardX][rand() % boardY] = TILE_TYPE_WALL;
+		}
+
+		playerX = rand() % boardX;
+		playerY = rand() % boardY;
+		gameBoard[playerX][playerY] = TILE_TYPE_PLAYER;
 		break;
 
 
@@ -90,51 +99,134 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 			{
 				// initalize
 				Rectangle(hdc, x*boardSize, y*boardSize, (x + 1)*boardSize, (y + 1)*boardSize);
-				currentBrush = CreateSolidBrush(RGB(255, 255, 255));
-				oldBrush = (HBRUSH)SelectObject(hdc, currentBrush);
+				COLORREF color;
+				color = RGB(255, 255, 255);
+				//currentBrush = CreateSolidBrush(RGB(255, 255, 255));
+				//oldBrush = (HBRUSH)SelectObject(hdc, currentBrush);
 
 				switch (gameBoard[x][y]) 
 				{
-				case CLICK_NONE:
+				case TILE_TYPE_NONE:
 					continue;
-				case CLICK_A:
-					currentBrush = CreateSolidBrush(RGB(255, 0, 255));
-					oldBrush = (HBRUSH)SelectObject(hdc, currentBrush);
+				case TILE_TYPE_WALL:
+					color = RGB(255, 0, 255);
+					//currentBrush = CreateSolidBrush(RGB(255, 0, 255));
+					//oldBrush = (HBRUSH)SelectObject(hdc, currentBrush);
+					//DeleteObject(currentBrush);
 					break;
-				case CLICK_B:
-					currentBrush = CreateSolidBrush(RGB(0, 0, 255));
-					oldBrush = (HBRUSH)SelectObject(hdc, currentBrush);
+				case TILE_TYPE_PLAYER:
+					color = RGB(0, 0, 255);
+					//currentBrush = CreateSolidBrush(RGB(0, 0, 255));
+					//oldBrush = (HBRUSH)SelectObject(hdc, currentBrush);
+					//DeleteObject(currentBrush);
 					break;
 				}
+				currentBrush = CreateSolidBrush(color);
+				oldBrush = (HBRUSH)SelectObject(hdc, currentBrush);
 				Ellipse(hdc, x*boardSize, y*boardSize, (x + 1)*boardSize, (y + 1)*boardSize);
 				SelectObject(hdc, oldBrush);
+				DeleteObject(currentBrush);
 			}
 		}
 
 		EndPaint(hWnd, &ps);
 		break;
 
-
-	case WM_LBUTTONDOWN:
-		mx = LOWORD(lParam);
-		my = HIWORD(lParam);
-		if (mx / 100 < boardX && my / 100 < boardY)
+	case WM_KEYDOWN:
+		switch (wParam)
 		{
-			if (gameBoard[mx / 100][my / 100] == CLICK_NONE)
+		case VK_UP:
+			if (playerY - 1 >= 0)
 			{
-				if (checkTurn) 
+				if (gameBoard[playerX][playerY - 1] == TILE_TYPE_NONE) 
 				{
-					gameBoard[mx / 100][my / 100] = CLICK_A;
-					checkTurn = false;
+					gameBoard[playerX][playerY] = TILE_TYPE_NONE;
+					playerY--;
+					gameBoard[playerX][playerY] = TILE_TYPE_PLAYER;
 				}
-				else 
+				else if (playerY - 2 >= 0 && gameBoard[playerX][playerY - 1] == TILE_TYPE_WALL)
 				{
-					gameBoard[mx / 100][my / 100] = CLICK_B;
-					checkTurn = true;
+					if (gameBoard[playerX][playerY - 2] == TILE_TYPE_NONE) 
+					{
+						gameBoard[playerX][playerY] = TILE_TYPE_NONE;
+						playerY--;
+						gameBoard[playerX][playerY] = TILE_TYPE_PLAYER;
+						gameBoard[playerX][playerY - 1] = TILE_TYPE_WALL;
+					}
 				}
 			}
+			break;
+		case VK_DOWN:
+			if (playerY + 1 < boardY)
+			{
+				if (gameBoard[playerX][playerY + 1] == TILE_TYPE_NONE) 
+				{
+					gameBoard[playerX][playerY] = TILE_TYPE_NONE;
+					playerY++;
+					gameBoard[playerX][playerY] = TILE_TYPE_PLAYER;
+				}
+				else if (playerY + 2 < boardY && gameBoard[playerX][playerY + 1] == TILE_TYPE_WALL)
+				{
+					if (gameBoard[playerX][playerY + 2] == TILE_TYPE_NONE)
+					{
+						gameBoard[playerX][playerY] = TILE_TYPE_NONE;
+						playerY++;
+						gameBoard[playerX][playerY] = TILE_TYPE_PLAYER;
+						gameBoard[playerX][playerY + 1] = TILE_TYPE_WALL;
+					}
+				}
+			}
+			break;
+		case VK_LEFT:
+			if (playerX - 1 >= 0)
+			{
+				if (gameBoard[playerX - 1][playerY] == TILE_TYPE_NONE)
+				{
+					gameBoard[playerX][playerY] = TILE_TYPE_NONE;
+					playerX--;
+					gameBoard[playerX][playerY] = TILE_TYPE_PLAYER;
+				}
+				else if (playerX - 2 >= 0 && gameBoard[playerX - 1][playerY] == TILE_TYPE_WALL)
+				{
+					if (gameBoard[playerX - 2][playerY] == TILE_TYPE_NONE)
+					{
+						gameBoard[playerX][playerY] = TILE_TYPE_NONE;
+						playerX--;
+						gameBoard[playerX][playerY] = TILE_TYPE_PLAYER;
+						gameBoard[playerX - 1][playerY] = TILE_TYPE_WALL;
+					}
+				}
+			}
+			break;
+		case VK_RIGHT:
+			if (playerX + 1 < boardX)
+			{
+				if (gameBoard[playerX + 1][playerY] == TILE_TYPE_NONE) 
+				{
+					gameBoard[playerX][playerY] = TILE_TYPE_NONE;
+					playerX++;
+					gameBoard[playerX][playerY] = TILE_TYPE_PLAYER;
+				}
+				else if (playerX + 2 < boardX && gameBoard[playerX + 1][playerY] == TILE_TYPE_WALL)
+				{
+					if (gameBoard[playerX + 2][playerY] == TILE_TYPE_NONE)
+					{
+						gameBoard[playerX][playerY] = TILE_TYPE_NONE;
+						playerX++;
+						gameBoard[playerX][playerY] = TILE_TYPE_PLAYER;
+						gameBoard[playerX + 1][playerY] = TILE_TYPE_WALL;
+					}
+				}
+			}
+			break;
+		default:
+			break;
 		}
 		InvalidateRect(hWnd, NULL, TRUE);
+
+		break;
+
+	case WM_LBUTTONDOWN:
 		break;
 
 	case WM_LBUTTONUP:
@@ -154,3 +246,25 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 	// WndProc에서 처리하지 않은 나머지 메세지들은 윈도우즈 운영체제에게 맡긴다.
 	return (DefWindowProc(hWnd, iMessage, wParam, lParam));
 }
+
+//void CheckMoving(int x, int y, int tx, int ty, int *pTarget) 
+//{
+//	if (x != -1) 
+//	{
+//		if (tx < boardX && gameBoard[playerX][playerY + 1] == TILE_TYPE_NONE)
+//		{
+//			gameBoard[playerX][playerY] = TILE_TYPE_NONE;
+//			playerY++;
+//			gameBoard[playerX][playerY] = TILE_TYPE_PLAYER;
+//		}
+//	}
+//	else if (y != -1) 
+//	{
+//		if (playerY + 1 < boardY && gameBoard[playerX][playerY + 1] == TILE_TYPE_NONE)
+//		{
+//			gameBoard[playerX][playerY] = TILE_TYPE_NONE;
+//			playerY++;
+//			gameBoard[playerX][playerY] = TILE_TYPE_PLAYER;
+//		}
+//	}
+// }
