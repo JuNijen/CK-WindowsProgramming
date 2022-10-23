@@ -6,6 +6,26 @@ HINSTANCE g_hInst;
 LPCTSTR lpszClass = TEXT("윈도우 프로그래밍");
 
 
+//과제 2 : 고양이와 쥐 게임
+// 윈도우의(100, 100) 좌표에 “고양이"라는 단어를 출력한다.
+// 마우스 왼쪽 버튼을 누르면 포인터 위치에 “쥐"를 출력하고 버튼을 떼면 이 글자가 사라진다.
+// 마우스 왼쪽 버튼을 누른채 마우스를 이동하면 고양이가 쥐를 잡으려고 움직이기 시작한다.마
+//우스 버튼을 떼면 쥐는 사라지고 고양이는 움직임을 멈춘다.
+// 쥐가 화면에서 사라지면 고양이는 움직임을 멈춘다.
+// 고양이는 마우스 버튼을 누른 채 움직이지 않아야 고양이가 쥐를 잡을 수 있다.마우스 버튼을
+//누른 채 마우스를 움직이면 고양이는 쥐를 쫓아다니기만 한다.
+// 고양이가 쥐를 쫓아가는 동선 : 고양이의 위치 – 쥐의 위치
+// 이 때 고양이의 위치에서 쥐의 위치까지 고양이는 한 번에(고양이의 위치 – 쥐의 위치) / 10 만큼
+//씩 움직인다.
+// 마우스가 눌린 채로 움직이지 않을 때 고양이는 쥐를 10번 뛰어가서 잡을 수 있다.이 때 고양이
+//는 자동으로 움직인다. (타이머 이용)
+// 그런데 고양이가 10번 뛰었을 때 고양이 좌표와 쥐 좌표값은 일치하지 않을 수도 있다.그러므
+//로 고양이가 쥐를 잡는 것은 좌표로 확인해서는 안되고 마우스 눌린 고정 상태에서 고양이가 자
+//동으로 10번을 뛰면 잡은 것으로 간주한다.
+//stepX = (mouse.x - cat.x) / 10;
+//stepY = (mouse.y - cat.y) / 10;
+
+
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdParam, int nCmdShow)
 {
 	HWND hWnd;
@@ -51,193 +71,124 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmd
 	return (int)Message.wParam;
 }
 
-enum TILE_TYPE
-{
-	TILE_TYPE_NONE = 0,
-	TILE_TYPE_WALL,
-	TILE_TYPE_PLAYER,
-};
-
 
 // WndProc에서 각종 이벤트 진행.
 LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 {
 	HDC hdc;
 	PAINTSTRUCT ps;
-	const int boardX = 8;
-	const int boardY = 8;
-	const int boardSize = 75;
-	const int wallCount = 10;
 
-	static TILE_TYPE gameBoard[boardX][boardY];
-	static int playerX, playerY;
+	const TCHAR* catText = L"고양이";
+	const TCHAR* mouseText = L"쥐";
+	const TCHAR* catchText = L"잡았습니다!";
+
+	const int timerNumber = 1;
+	const int timerSec = 300;
+	const int countMax = 10;
+
+	static int catPosX, catPosY;
+	static int mousePosX, mousePosY;
+	static int moveX, moveY;
+	static int moveCount;
+	static bool bIsClick, bIsCatch;
+
 	HBRUSH currentBrush, oldBrush;
 
 
 	switch (iMessage)
 	{
 	case WM_CREATE:
-		gameBoard[boardX][boardY] = { TILE_TYPE_NONE, };
+		catPosX = 100;
+		catPosY = 100;
 
-		for (int count = 0; count < wallCount; count++) 
-		{
-			gameBoard[rand() % boardX][rand() % boardY] = TILE_TYPE_WALL;
-		}
+		mousePosX = 0;
+		mousePosY = 0;
+		moveCount = 0;
 
-		playerX = rand() % boardX;
-		playerY = rand() % boardY;
-		gameBoard[playerX][playerY] = TILE_TYPE_PLAYER;
+		bIsClick = false;
+		bIsCatch = false;
 		break;
-
 
 	case WM_PAINT:
 		hdc = BeginPaint(hWnd, &ps);
 
-		for (int x = 0; x < boardX; x++) 
-		{
-			for (int y = 0; y < boardY; y++)
-			{
-				// initalize
-				Rectangle(hdc, x*boardSize, y*boardSize, (x + 1)*boardSize, (y + 1)*boardSize);
-				COLORREF color;
-				color = RGB(255, 255, 255);
-				//currentBrush = CreateSolidBrush(RGB(255, 255, 255));
-				//oldBrush = (HBRUSH)SelectObject(hdc, currentBrush);
+		TextOut(hdc, catPosX, catPosY, catText, lstrlen(catText));
 
-				switch (gameBoard[x][y]) 
-				{
-				case TILE_TYPE_NONE:
-					continue;
-				case TILE_TYPE_WALL:
-					color = RGB(255, 0, 255);
-					//currentBrush = CreateSolidBrush(RGB(255, 0, 255));
-					//oldBrush = (HBRUSH)SelectObject(hdc, currentBrush);
-					//DeleteObject(currentBrush);
-					break;
-				case TILE_TYPE_PLAYER:
-					color = RGB(0, 0, 255);
-					//currentBrush = CreateSolidBrush(RGB(0, 0, 255));
-					//oldBrush = (HBRUSH)SelectObject(hdc, currentBrush);
-					//DeleteObject(currentBrush);
-					break;
-				}
-				currentBrush = CreateSolidBrush(color);
-				oldBrush = (HBRUSH)SelectObject(hdc, currentBrush);
-				Ellipse(hdc, x*boardSize, y*boardSize, (x + 1)*boardSize, (y + 1)*boardSize);
-				SelectObject(hdc, oldBrush);
-				DeleteObject(currentBrush);
-			}
+		if (mousePosX && mousePosY) //위치 정보가 있을 경우 
+		{
+			TextOut(hdc, mousePosX, mousePosY, mouseText, lstrlen(mouseText));
+		}
+		if (bIsCatch)
+		{
+			TextOut(hdc, mousePosX, mousePosY, catchText, lstrlen(catchText));
 		}
 
 		EndPaint(hWnd, &ps);
 		break;
 
-	case WM_KEYDOWN:
-		switch (wParam)
-		{
-		case VK_UP:
-			if (playerY - 1 >= 0)
-			{
-				if (gameBoard[playerX][playerY - 1] == TILE_TYPE_NONE) 
-				{
-					gameBoard[playerX][playerY] = TILE_TYPE_NONE;
-					playerY--;
-					gameBoard[playerX][playerY] = TILE_TYPE_PLAYER;
-				}
-				else if (playerY - 2 >= 0 && gameBoard[playerX][playerY - 1] == TILE_TYPE_WALL)
-				{
-					if (gameBoard[playerX][playerY - 2] == TILE_TYPE_NONE) 
-					{
-						gameBoard[playerX][playerY] = TILE_TYPE_NONE;
-						playerY--;
-						gameBoard[playerX][playerY] = TILE_TYPE_PLAYER;
-						gameBoard[playerX][playerY - 1] = TILE_TYPE_WALL;
-					}
-				}
-			}
-			break;
-		case VK_DOWN:
-			if (playerY + 1 < boardY)
-			{
-				if (gameBoard[playerX][playerY + 1] == TILE_TYPE_NONE) 
-				{
-					gameBoard[playerX][playerY] = TILE_TYPE_NONE;
-					playerY++;
-					gameBoard[playerX][playerY] = TILE_TYPE_PLAYER;
-				}
-				else if (playerY + 2 < boardY && gameBoard[playerX][playerY + 1] == TILE_TYPE_WALL)
-				{
-					if (gameBoard[playerX][playerY + 2] == TILE_TYPE_NONE)
-					{
-						gameBoard[playerX][playerY] = TILE_TYPE_NONE;
-						playerY++;
-						gameBoard[playerX][playerY] = TILE_TYPE_PLAYER;
-						gameBoard[playerX][playerY + 1] = TILE_TYPE_WALL;
-					}
-				}
-			}
-			break;
-		case VK_LEFT:
-			if (playerX - 1 >= 0)
-			{
-				if (gameBoard[playerX - 1][playerY] == TILE_TYPE_NONE)
-				{
-					gameBoard[playerX][playerY] = TILE_TYPE_NONE;
-					playerX--;
-					gameBoard[playerX][playerY] = TILE_TYPE_PLAYER;
-				}
-				else if (playerX - 2 >= 0 && gameBoard[playerX - 1][playerY] == TILE_TYPE_WALL)
-				{
-					if (gameBoard[playerX - 2][playerY] == TILE_TYPE_NONE)
-					{
-						gameBoard[playerX][playerY] = TILE_TYPE_NONE;
-						playerX--;
-						gameBoard[playerX][playerY] = TILE_TYPE_PLAYER;
-						gameBoard[playerX - 1][playerY] = TILE_TYPE_WALL;
-					}
-				}
-			}
-			break;
-		case VK_RIGHT:
-			if (playerX + 1 < boardX)
-			{
-				if (gameBoard[playerX + 1][playerY] == TILE_TYPE_NONE) 
-				{
-					gameBoard[playerX][playerY] = TILE_TYPE_NONE;
-					playerX++;
-					gameBoard[playerX][playerY] = TILE_TYPE_PLAYER;
-				}
-				else if (playerX + 2 < boardX && gameBoard[playerX + 1][playerY] == TILE_TYPE_WALL)
-				{
-					if (gameBoard[playerX + 2][playerY] == TILE_TYPE_NONE)
-					{
-						gameBoard[playerX][playerY] = TILE_TYPE_NONE;
-						playerX++;
-						gameBoard[playerX][playerY] = TILE_TYPE_PLAYER;
-						gameBoard[playerX + 1][playerY] = TILE_TYPE_WALL;
-					}
-				}
-			}
-			break;
-		default:
-			break;
-		}
-		InvalidateRect(hWnd, NULL, TRUE);
-
-		break;
-
+	//• [참고]두 원의 거리사이의 좌표 :
+	// (y2 - y1) / (x2 - x1) = 기울기a 일 때 y - y2 = a * (x - x2)
 	case WM_LBUTTONDOWN:
+		mousePosX = LOWORD(lParam);
+		mousePosY = HIWORD(lParam);
+
+		moveX = mousePosX - catPosX;
+		moveY = mousePosY - catPosY;
+		moveCount = 0;
+
+		bIsClick = true;
+		bIsCatch = false;
+		SetTimer(hWnd, timerNumber, timerSec, NULL);
+
+		InvalidateRect(hWnd, NULL, TRUE);
 		break;
 
 	case WM_LBUTTONUP:
+		mousePosX = LOWORD(lParam);
+		mousePosY = HIWORD(lParam);
+
+		moveX = mousePosX - catPosX;
+		moveY = mousePosY - catPosY;
+
+		bIsClick = false;
+		bIsCatch = false;
+		KillTimer(hWnd, timerNumber);
 		break;
 
 	case WM_MOUSEMOVE:
+		if (	bIsClick) 
+		{
+			mousePosX = LOWORD(lParam);
+			mousePosY = HIWORD(lParam);
+
+			moveX = mousePosX - catPosX;
+			moveY = mousePosY - catPosY;
+			moveCount = 0;
+
+			bIsCatch = false;
+			SetTimer(hWnd, timerNumber, timerSec, NULL);
+
+			InvalidateRect(hWnd, NULL, TRUE);
+		}
+		break;
+
+	case WM_TIMER:
+		if (moveCount < countMax)
+		{
+			catPosX += moveX / countMax;
+			catPosY += moveY / countMax;
+			moveCount++;
+		}
+		else 
+		{
+			bIsCatch = true;
+			KillTimer(hWnd, timerNumber);
+		}
+
+		InvalidateRect(hWnd, NULL, TRUE);
 		break;
 
 	case WM_DESTROY:
-		//DeleteObject(currentBrush);
-		//DeleteObject(oldBrush);
 		PostQuitMessage(0);	// WM_QUIT 메세지를 메시지큐에 넣는다.
 		break;						// 직접 사용자가 처리했을 때 0을 돌려주어야 한다.
 	}
@@ -246,25 +197,3 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 	// WndProc에서 처리하지 않은 나머지 메세지들은 윈도우즈 운영체제에게 맡긴다.
 	return (DefWindowProc(hWnd, iMessage, wParam, lParam));
 }
-
-//void CheckMoving(int x, int y, int tx, int ty, int *pTarget) 
-//{
-//	if (x != -1) 
-//	{
-//		if (tx < boardX && gameBoard[playerX][playerY + 1] == TILE_TYPE_NONE)
-//		{
-//			gameBoard[playerX][playerY] = TILE_TYPE_NONE;
-//			playerY++;
-//			gameBoard[playerX][playerY] = TILE_TYPE_PLAYER;
-//		}
-//	}
-//	else if (y != -1) 
-//	{
-//		if (playerY + 1 < boardY && gameBoard[playerX][playerY + 1] == TILE_TYPE_NONE)
-//		{
-//			gameBoard[playerX][playerY] = TILE_TYPE_NONE;
-//			playerY++;
-//			gameBoard[playerX][playerY] = TILE_TYPE_PLAYER;
-//		}
-//	}
-// }
