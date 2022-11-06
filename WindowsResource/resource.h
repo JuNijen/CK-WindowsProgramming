@@ -13,6 +13,23 @@
 #define IDC_WINDOWSRESOURCE             109
 #define IDR_MAINFRAME                   128
 #define IDR_MENU1                       129
+#define IDD_DIALOG1                     130
+#define IDD_DIALOG2                     131
+#define IDD_DIALOG3                     132
+#define ID_BUTTON_END                   1000
+#define IDC_BUTTON_END                  1000
+#define IDC_BUTTON_PRINT                1001
+#define IDC_BUTTON_PAUSE                1001
+#define IDC_BUTTON_START                1002
+#define IDC_EDIT1                       1002
+#define IDC_EDIT2                       1003
+#define IDC_BUTTON_COPY                 1003
+#define IDC_EDIT3                       1004
+#define IDC_EDIT4                       1005
+#define IDC_BUTTON2                     1006
+#define IDC_BUTTON_DELETE               1006
+#define IDC_EDIT_ORIGINAL               1007
+#define IDC_EDIT_COPY                   1008
 #define ID_32771                        32771
 #define ID_32772                        32772
 #define ID_32773                        32773
@@ -27,6 +44,26 @@
 #define ID_EDITUNDO                     32782
 #define ID_EDITCOPY                     32783
 #define ID_EDITPASTE                    32784
+#define ID_Menu                         32785
+#define ID_CREATE_DIALOG                32786
+#define ID_32787                        32787
+#define ID_32788                        32788
+#define ID_32789                        32789
+#define ID_32790                        32790
+#define ID_32791                        32791
+#define ID_32792                        32792
+#define ID_32793                        32793
+#define ID_32794                        32794
+#define ID_32795                        32795
+#define ID_CIRCLE_RED                   32796
+#define ID_CIRCLE_GREEN                 32797
+#define ID_CIRCLE_BLUE                  32798
+#define ID_SQUARE_RED                   32799
+#define ID_SQUARE_GREEN                 32800
+#define ID_SQUARE_BLUE                  32801
+#define ID_LINE_RED                     32802
+#define ID_LINE_GREEN                   32803
+#define ID_LINE_BLUE                    32804
 #define IDC_STATIC                      -1
 
 // Next default values for new objects
@@ -34,9 +71,9 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
-#define _APS_NEXT_RESOURCE_VALUE        130
-#define _APS_NEXT_COMMAND_VALUE         32785
-#define _APS_NEXT_CONTROL_VALUE         1000
+#define _APS_NEXT_RESOURCE_VALUE        132
+#define _APS_NEXT_COMMAND_VALUE         32802
+#define _APS_NEXT_CONTROL_VALUE         1009
 #define _APS_NEXT_SYMED_VALUE           110
 #endif
 #endif

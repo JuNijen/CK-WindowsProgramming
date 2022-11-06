@@ -1,5 +1,4 @@
 ﻿// WindowsResource.cpp : 애플리케이션에 대한 진입점을 정의합니다.
-//
 
 #include "framework.h"
 #include "WindowsResource.h"
@@ -13,11 +12,15 @@ HINSTANCE hInst;                                // 현재 인스턴스입니다.
 WCHAR szTitle[MAX_LOADSTRING];                  // 제목 표시줄 텍스트입니다.
 WCHAR szWindowClass[MAX_LOADSTRING];            // 기본 창 클래스 이름입니다.
 
+TCHAR str[128] = TEXT("");
+int x, y;
+
+
 // 이 코드 모듈에 포함된 함수의 선언을 전달합니다:
 ATOM                MyRegisterClass(HINSTANCE hInstance);
 BOOL                InitInstance(HINSTANCE, int);
 LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
-INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
+INT_PTR   CALLBACK	   DlgProc(HWND, UINT, WPARAM, LPARAM);
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	_In_opt_ HINSTANCE hPrevInstance,
@@ -61,11 +64,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
 
 
-//
 //  함수: MyRegisterClass()
-//
 //  용도: 창 클래스를 등록합니다.
-//
 ATOM MyRegisterClass(HINSTANCE hInstance)
 {
 	WNDCLASSEXW wcex;
@@ -81,23 +81,18 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
 	wcex.hCursor = LoadCursor(nullptr, IDC_ARROW);
 	wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
 	wcex.lpszMenuName = MAKEINTRESOURCEW(IDR_MENU1);
-	//wndClass.lpszMenuName = MAKEINTRESOURCE("IDR_MENU1");
 	wcex.lpszClassName = szWindowClass;
 	wcex.hIconSm = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL));
 
 	return RegisterClassExW(&wcex);
 }
 
-//
+
 //   함수: InitInstance(HINSTANCE, int)
-//
 //   용도: 인스턴스 핸들을 저장하고 주 창을 만듭니다.
-//
 //   주석:
-//
 //        이 함수를 통해 인스턴스 핸들을 전역 변수에 저장하고
 //        주 프로그램 창을 만든 다음 표시합니다.
-//
 BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 {
 	hInst = hInstance; // 인스턴스 핸들을 전역 변수에 저장합니다.
@@ -117,198 +112,87 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 }
 
 
-#include <math.h>
-#define BSIZE 40
-double LengthPts(int x1, int y1, int x2, int y2)
-{
-	return (sqrt((float)((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1))));
-}
-BOOL InCircle(int x, int y, int mx, int my)
-{
-	if (LengthPts(x, y, mx, my) < BSIZE) return TRUE;
-	else return FALSE;
-}
-//
 //  함수: WndProc(HWND, UINT, WPARAM, LPARAM)
-//
 //  용도: 주 창의 메시지를 처리합니다.
-//
 //  WM_COMMAND  - 애플리케이션 메뉴를 처리합니다.
 //  WM_PAINT    - 주 창을 그립니다.
 //  WM_DESTROY  - 종료 메시지를 게시하고 반환합니다.
-//
-//
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-	int answer = -1;
-	OPENFILENAME OFN;
-	TCHAR str[300] = TEXT(""), lpstrFile[MAX_PATH] = TEXT(""), test[10] = TEXT("test");
-	TCHAR lpstrFileTitle[MAX_PATH] = TEXT("");
-	TCHAR filter[] = TEXT("모든 파일(*.*) \0*.*\0텍스트 파일(*.txt) \0*.txt;*.doc\0");
-	static HMENU hMenu, hSubMenu;
-
-	HDC hdc;
-	PAINTSTRUCT ps;
-
-	static RECT rectView;
-	static POINT pastedCircles[11];
-	static int count = 1;
-	static int selectedCount = -1;
-	static int rcX, rcY;
-
-	int mx, my;
-	static BOOL isSelect;
-	static BOOL isCopy;
-	static BOOL isPaste;
+	static int status;
+	static HBRUSH hB, oldB;
+	static HPEN hP, oldP;
 
 	switch (message)
 	{
-	case WM_CREATE:
-		hMenu = GetMenu(hWnd);
-		hSubMenu = GetSubMenu(hMenu, 1);
-		EnableMenuItem(hSubMenu, ID_EDITCOPY, MF_GRAYED);
-		EnableMenuItem(hSubMenu, ID_EDITPASTE, MF_GRAYED);
-
-		isSelect = FALSE;
-		isCopy = FALSE;
-		isPaste = FALSE;
-		pastedCircles[0].x = 50;
-		pastedCircles[0].y = 50;
+	case WM_COMMAND:
+		status = LOWORD(wParam);
+		InvalidateRect(hWnd, NULL, TRUE);
 		break;
+
 	case WM_PAINT:
 	{
 		PAINTSTRUCT ps;
 		HDC hdc = BeginPaint(hWnd, &ps);
-		// TODO: 여기에 hdc를 사용하는 그리기 코드를 추가합니다...
 
-		EnableMenuItem(hSubMenu, ID_EDITCOPY, isSelect ? MF_ENABLED : MF_GRAYED);
-		EnableMenuItem(hSubMenu, ID_EDITPASTE, isCopy ? MF_ENABLED : MF_GRAYED);
 
-		if (isSelect) 
+		switch (status)
 		{
-			Rectangle(hdc, pastedCircles[selectedCount].x - BSIZE, pastedCircles[selectedCount].y - BSIZE, pastedCircles[selectedCount].x + BSIZE, pastedCircles[selectedCount].y + BSIZE);
+		case ID_LINE_RED:
+			hB = CreateSolidBrush(RGB(255, 0, 0));
+			break;
+		case ID_LINE_GREEN:
+			hB = CreateSolidBrush(RGB(0, 255, 0));
+			break;
+		case ID_LINE_BLUE:
+			hB = CreateSolidBrush(RGB(0, 0, 255));
+			break;
 		}
 
-		for (int i = 0; i < count; i++)
+		if (status == ID_CIRCLE_RED || status == ID_SQUARE_RED) hB = CreateSolidBrush(RGB(255, 0, 0));
+		else if (status == ID_CIRCLE_GREEN || status == ID_SQUARE_GREEN) hB = CreateSolidBrush(RGB(0, 255, 0));
+		else if (status == ID_CIRCLE_BLUE || status == ID_SQUARE_BLUE) hB = CreateSolidBrush(RGB(0, 0, 255));
+		else if (status == ID_LINE_RED) hP = CreatePen(BS_SOLID, 1, RGB(255, 0, 0));
+		else if (status == ID_LINE_GREEN) hP = CreatePen(BS_SOLID, 1, RGB(0, 255, 0));
+		else if (status == ID_LINE_BLUE) hP = CreatePen(BS_SOLID, 1, RGB(0, 0, 255));
+
+		oldB = (HBRUSH)SelectObject(hdc, hB);
+		oldP = (HPEN)SelectObject(hdc, hP);
+
+		switch (status)
 		{
-			Ellipse(hdc, pastedCircles[i].x - BSIZE, pastedCircles[i].y - BSIZE, pastedCircles[i].x + BSIZE, pastedCircles[i].y + BSIZE);
+		case ID_CIRCLE_RED:
+		case ID_CIRCLE_GREEN:
+		case ID_CIRCLE_BLUE:
+			Ellipse(hdc, 100, 100, 200, 200);
+			break;
+		case ID_SQUARE_RED:
+		case ID_SQUARE_GREEN:
+		case ID_SQUARE_BLUE:
+			Rectangle(hdc, 100, 100, 200, 200);
+			break;
+		case ID_LINE_RED:
+		case ID_LINE_GREEN:
+		case ID_LINE_BLUE:
+			MoveToEx(hdc, 100, 100, NULL);
+			LineTo(hdc, 200, 200);
+			break;
 		}
+
+		SelectObject(hdc, oldB);
+		SelectObject(hdc, oldP);
+		DeleteObject(hB);
+		DeleteObject(hP);
 
 		EndPaint(hWnd, &ps);
 	}
 	break;
 
-	case WM_COMMAND:
-	{
-		int wmId = LOWORD(wParam);
-		// 메뉴 선택을 구문 분석합니다:
-		switch (wmId)
-		{
-		case ID_FILENEW:
-			answer = MessageBox(hWnd, TEXT("새 파일을 열겠습니까?"), TEXT("새 파일 선택"), MB_OKCANCEL);
-			break;
-			//case IDM_ABOUT:
-			//    DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
-			//    break;
-		case ID_FILEOPEN:
-			memset(&OFN, 0, sizeof(OPENFILENAME));
-			OFN.lStructSize = sizeof(OPENFILENAME);
-			OFN.hwndOwner = hWnd;
-			OFN.lpstrFilter = filter;
-			OFN.lpstrFile = lpstrFile;
-			OFN.nMaxFile = MAX_PATH;
-			OFN.lpstrFileTitle = lpstrFileTitle;
-			OFN.nMaxFileTitle = MAX_PATH;
-			OFN.lpstrInitialDir = TEXT("."); // 대화상자에 먼저 보여줄 폴더, 프로그램이 실행되는 현재폴더(.)를 기본 폴더로 지정
-
-			if (GetOpenFileName(&OFN) != 0) {
-				_stprintf_s(str, TEXT("%s 파일을 열겠습니까?"), OFN.lpstrFileTitle);
-				MessageBox(hWnd, str, TEXT("열기 선택"), MB_OK);
-			}
-			break;
-		case ID_EDITCOPY:
-			isCopy = TRUE;
-			InvalidateRect(hWnd, NULL, TRUE);
-			break;
-		case ID_EDITPASTE:
-			isPaste = TRUE;
-			pastedCircles[count].x = rcX;
-			pastedCircles[count].y = rcY;
-			count++;
-			InvalidateRect(hWnd, NULL, TRUE);
-			break;
-		case ID_EXIT:
-			answer = MessageBox(hWnd, TEXT("파일을 저장하고 끝내겠습니까?"), TEXT("끝내기 선택"), MB_YESNOCANCEL);
-			if (answer == IDYES || answer == IDNO)
-			{
-				DestroyWindow(hWnd);
-				PostQuitMessage(0);
-			}
-			break;
-		default:
-			return DefWindowProc(hWnd, message, wParam, lParam);
-		}
-	}
-	break;
-	case WM_LBUTTONDOWN:
-		mx = LOWORD(lParam);
-		my = HIWORD(lParam);
-
-		//if (InCircle(x, y, mx, my))
-		//{
-		//	isSelect = TRUE;
-		//}
-		//else
-		//{
-		//	isSelect = FALSE;
-		//	isCopy = FALSE;
-		//}
-
-		for(int i = 0; i< count; i++)
-		{
-			if (InCircle(pastedCircles[i].x, pastedCircles[i].y, mx, my))
-			{
-				isSelect = TRUE;
-				selectedCount = i;
-				break;
-			}
-			else
-			{
-				isSelect = FALSE;
-				isCopy = FALSE;
-			}
-		}
-		InvalidateRect(hWnd, NULL, TRUE);
-		break;
-	case WM_RBUTTONDOWN:
-		rcX = LOWORD(lParam);
-		rcY = HIWORD(lParam);
-		break;
 	case WM_DESTROY:
 		PostQuitMessage(0);
 		break;
+
 	default:
 		return DefWindowProc(hWnd, message, wParam, lParam);
 	}
-	return 0;
-}
-
-// 정보 대화 상자의 메시지 처리기입니다.
-INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
-{
-	UNREFERENCED_PARAMETER(lParam);
-	switch (message)
-	{
-	case WM_INITDIALOG:
-		return (INT_PTR)TRUE;
-
-	case WM_COMMAND:
-		if (LOWORD(wParam) == IDOK || LOWORD(wParam) == IDCANCEL)
-		{
-			EndDialog(hDlg, LOWORD(wParam));
-			return (INT_PTR)TRUE;
-		}
-		break;
-	}
-	return (INT_PTR)FALSE;
 }
