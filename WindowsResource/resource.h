@@ -15,8 +15,7 @@
 #define IDR_MENU1                       129
 #define IDD_DIALOG1                     130
 #define IDD_DIALOG2                     131
-#define IDD_DIALOG3                     132
-#define ID_BUTTON_END                   1000
+#define IDD_DIALOG_CPYP                 132
 #define IDC_BUTTON_END                  1000
 #define IDC_BUTTON_PRINT                1001
 #define IDC_BUTTON_PAUSE                1001

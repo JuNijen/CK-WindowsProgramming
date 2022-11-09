@@ -125,6 +125,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 	switch (message)
 	{
+
+	case WM_LBUTTONDOWN:
+		DialogBox(hInst, MAKEINTRESOURCE(IDD_DIALOG_CPYP), hWnd, DlgProc);
+		break;
+
 	case WM_COMMAND:
 		status = LOWORD(wParam);
 		InvalidateRect(hWnd, NULL, TRUE);
@@ -195,4 +200,36 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	default:
 		return DefWindowProc(hWnd, message, wParam, lParam);
 	}
+}
+
+INT_PTR CALLBACK DlgProc(HWND hDlg, UINT iMsg, WPARAM wParam, LPARAM lParam)
+{
+	TCHAR word[100];
+
+	switch (iMsg)
+	{
+	case WM_INITDIALOG:
+		return (INT_PTR)TRUE;
+	case WM_COMMAND:
+		switch (LOWORD(wParam))
+		{
+		case IDC_BUTTON_COPY:
+			GetDlgItemText(hDlg, IDC_EDIT_ORIGINAL, word, 100);
+			SetDlgItemText(hDlg, IDC_EDIT_COPY, word);
+			break;
+		case IDC_BUTTON_DELETE:
+			SetDlgItemText(hDlg, IDC_EDIT_ORIGINAL, TEXT(" "));
+			SetDlgItemText(hDlg, IDC_EDIT_COPY, TEXT(" "));
+			break;
+		case IDOK:
+			EndDialog(hDlg, 0);
+			break;
+		case IDCANCEL:
+			EndDialog(hDlg, 0);
+			break;
+
+		}
+
+	}
+	return (INT_PTR)FALSE;
 }
