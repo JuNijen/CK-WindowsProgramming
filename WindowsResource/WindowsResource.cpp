@@ -5,22 +5,6 @@
 #include "resource.h"
 #include <commdlg.h>
 
-#define MAX_LOADSTRING 100
-
-// 전역 변수:
-HINSTANCE hInst;                                // 현재 인스턴스입니다.
-WCHAR szTitle[MAX_LOADSTRING];                  // 제목 표시줄 텍스트입니다.
-WCHAR szWindowClass[MAX_LOADSTRING];            // 기본 창 클래스 이름입니다.
-
-TCHAR str[128] = TEXT("");
-int x, y;
-
-
-// 이 코드 모듈에 포함된 함수의 선언을 전달합니다:
-ATOM                MyRegisterClass(HINSTANCE hInstance);
-BOOL                InitInstance(HINSTANCE, int);
-LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
-INT_PTR   CALLBACK	   DlgProc(HWND, UINT, WPARAM, LPARAM);
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	_In_opt_ HINSTANCE hPrevInstance,
@@ -120,14 +104,17 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	static int status;
-	static HBRUSH hB, oldB;
-	static HPEN hP, oldP;
+
 
 	switch (message)
 	{
 
 	case WM_LBUTTONDOWN:
-		DialogBox(hInst, MAKEINTRESOURCE(IDD_DIALOG_CPYP), hWnd, DlgProc);
+		//DialogBox(hInst, MAKEINTRESOURCE(IDD_DIALOG_CPYP), hWnd, DlgProc);
+		//DialogBox(hInst, MAKEINTRESOURCE(IDD_DIALOG_CALC), hWnd, DlgProcCalc);
+		//DialogBox(hInst, MAKEINTRESOURCE(IDD_DIALOG_CHECK_DIALOG), hWnd, DlgProcCheckbox);
+		//DialogBox(hInst, MAKEINTRESOURCE(IDD_DIALOG_SHAPES), hWnd, DlgProcShapes);
+		DialogBox(hInst, MAKEINTRESOURCE(IDD_LISTBOX), hWnd, DlgListbox);
 		break;
 
 	case WM_COMMAND:
@@ -139,55 +126,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	{
 		PAINTSTRUCT ps;
 		HDC hdc = BeginPaint(hWnd, &ps);
-
-
-		switch (status)
-		{
-		case ID_LINE_RED:
-			hB = CreateSolidBrush(RGB(255, 0, 0));
-			break;
-		case ID_LINE_GREEN:
-			hB = CreateSolidBrush(RGB(0, 255, 0));
-			break;
-		case ID_LINE_BLUE:
-			hB = CreateSolidBrush(RGB(0, 0, 255));
-			break;
-		}
-
-		if (status == ID_CIRCLE_RED || status == ID_SQUARE_RED) hB = CreateSolidBrush(RGB(255, 0, 0));
-		else if (status == ID_CIRCLE_GREEN || status == ID_SQUARE_GREEN) hB = CreateSolidBrush(RGB(0, 255, 0));
-		else if (status == ID_CIRCLE_BLUE || status == ID_SQUARE_BLUE) hB = CreateSolidBrush(RGB(0, 0, 255));
-		else if (status == ID_LINE_RED) hP = CreatePen(BS_SOLID, 1, RGB(255, 0, 0));
-		else if (status == ID_LINE_GREEN) hP = CreatePen(BS_SOLID, 1, RGB(0, 255, 0));
-		else if (status == ID_LINE_BLUE) hP = CreatePen(BS_SOLID, 1, RGB(0, 0, 255));
-
-		oldB = (HBRUSH)SelectObject(hdc, hB);
-		oldP = (HPEN)SelectObject(hdc, hP);
-
-		switch (status)
-		{
-		case ID_CIRCLE_RED:
-		case ID_CIRCLE_GREEN:
-		case ID_CIRCLE_BLUE:
-			Ellipse(hdc, 100, 100, 200, 200);
-			break;
-		case ID_SQUARE_RED:
-		case ID_SQUARE_GREEN:
-		case ID_SQUARE_BLUE:
-			Rectangle(hdc, 100, 100, 200, 200);
-			break;
-		case ID_LINE_RED:
-		case ID_LINE_GREEN:
-		case ID_LINE_BLUE:
-			MoveToEx(hdc, 100, 100, NULL);
-			LineTo(hdc, 200, 200);
-			break;
-		}
-
-		SelectObject(hdc, oldB);
-		SelectObject(hdc, oldP);
-		DeleteObject(hB);
-		DeleteObject(hP);
+		RGB_Shapes(hdc, status);
 
 		EndPaint(hWnd, &ps);
 	}
@@ -200,6 +139,61 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	default:
 		return DefWindowProc(hWnd, message, wParam, lParam);
 	}
+}
+
+
+void RGB_Shapes(HDC hdc, int status)
+{
+	static HBRUSH hB, oldB;
+	static HPEN hP, oldP;
+
+	switch (status)
+	{
+	case ID_LINE_RED:
+		hB = CreateSolidBrush(RGB(255, 0, 0));
+		break;
+	case ID_LINE_GREEN:
+		hB = CreateSolidBrush(RGB(0, 255, 0));
+		break;
+	case ID_LINE_BLUE:
+		hB = CreateSolidBrush(RGB(0, 0, 255));
+		break;
+	}
+
+	if (status == ID_CIRCLE_RED || status == ID_SQUARE_RED) hB = CreateSolidBrush(RGB(255, 0, 0));
+	else if (status == ID_CIRCLE_GREEN || status == ID_SQUARE_GREEN) hB = CreateSolidBrush(RGB(0, 255, 0));
+	else if (status == ID_CIRCLE_BLUE || status == ID_SQUARE_BLUE) hB = CreateSolidBrush(RGB(0, 0, 255));
+	else if (status == ID_LINE_RED) hP = CreatePen(BS_SOLID, 1, RGB(255, 0, 0));
+	else if (status == ID_LINE_GREEN) hP = CreatePen(BS_SOLID, 1, RGB(0, 255, 0));
+	else if (status == ID_LINE_BLUE) hP = CreatePen(BS_SOLID, 1, RGB(0, 0, 255));
+
+	oldB = (HBRUSH)SelectObject(hdc, hB);
+	oldP = (HPEN)SelectObject(hdc, hP);
+
+	switch (status)
+	{
+	case ID_CIRCLE_RED:
+	case ID_CIRCLE_GREEN:
+	case ID_CIRCLE_BLUE:
+		Ellipse(hdc, 100, 100, 200, 200);
+		break;
+	case ID_SQUARE_RED:
+	case ID_SQUARE_GREEN:
+	case ID_SQUARE_BLUE:
+		Rectangle(hdc, 100, 100, 200, 200);
+		break;
+	case ID_LINE_RED:
+	case ID_LINE_GREEN:
+	case ID_LINE_BLUE:
+		MoveToEx(hdc, 100, 100, NULL);
+		LineTo(hdc, 200, 200);
+		break;
+	}
+
+	SelectObject(hdc, oldB);
+	SelectObject(hdc, oldP);
+	DeleteObject(hB);
+	DeleteObject(hP);
 }
 
 INT_PTR CALLBACK DlgProc(HWND hDlg, UINT iMsg, WPARAM wParam, LPARAM lParam)
@@ -227,9 +221,178 @@ INT_PTR CALLBACK DlgProc(HWND hDlg, UINT iMsg, WPARAM wParam, LPARAM lParam)
 		case IDCANCEL:
 			EndDialog(hDlg, 0);
 			break;
-
 		}
+	}
+	return (INT_PTR)FALSE;
+}
 
+INT_PTR CALLBACK DlgProcCalc(HWND hDlg, UINT iMsg, WPARAM wParam, LPARAM lParam)
+{
+	int numA = GetDlgItemInt(hDlg, IDC_NUMBER_A, NULL, TRUE);
+	int numB = GetDlgItemInt(hDlg, IDC_NUMBER_B, NULL, TRUE);
+
+	switch (iMsg)
+	{
+	case WM_INITDIALOG:
+		return (INT_PTR)TRUE;
+	case WM_COMMAND:
+		switch (LOWORD(wParam))
+		{
+		case IDC_ADD:
+			SetDlgItemInt(hDlg, IDC_RESULT, numA+numB, TRUE);
+			break;
+		case IDC_SUB:
+			SetDlgItemInt(hDlg, IDC_RESULT, numA - numB, TRUE);
+			break;
+		case IDC_MUL:
+			SetDlgItemInt(hDlg, IDC_RESULT, numA * numB, TRUE);
+			break;
+		case IDC_DIV:
+			SetDlgItemInt(hDlg, IDC_RESULT, numA / numB, TRUE);
+			break;
+		case IDOK:
+			EndDialog(hDlg, 0);
+			break;
+		case IDCANCEL:
+			EndDialog(hDlg, 0);
+			break;
+		}
+	}
+	return (INT_PTR)FALSE;
+}
+
+INT_PTR CALLBACK DlgProcCheckbox(HWND hDlg, UINT iMsg, WPARAM wParam, LPARAM lParam)
+{
+	static int Check[4], Radio;
+	TCHAR hobby[][30] = { TEXT("Music"), TEXT("Book"), TEXT("Game"), TEXT("Exercise") };
+	TCHAR gender[][30] = { TEXT("Male"), TEXT("Female"), TEXT("ETC") };
+	TCHAR output[100];
+
+	switch (iMsg) {
+	case WM_INITDIALOG:
+		CheckRadioButton(hDlg, IDC_RADIO_MALE, IDC_RADIO_FEMALE, IDC_RADIO_ETC);
+		return (INT_PTR)TRUE;
+
+	case WM_COMMAND:
+		switch (LOWORD(wParam)) {
+		case IDC_CHECK_MUSIC:
+			Check[0] = 1 - Check[0];
+			break;
+		case IDC_CHECK_BOOK:
+			Check[1] = 1 - Check[1];
+			break;
+		case IDC_CHECK_GAME:
+			Check[2] = 1 - Check[2];
+			break;
+		case IDC_CHECK_EXERCISE:
+			Check[3] = 1 - Check[3];
+			break;
+
+		case IDC_RADIO_MALE:
+			Radio = 0;
+			break;
+		case IDC_RADIO_FEMALE:
+			Radio = 1;
+			break;
+		case IDC_RADIO_ETC:
+			Radio = 2;
+			break;
+
+		case IDOK:
+			_stprintf_s(output, TEXT("선택한 취미는 %s %s %s %s입니다.\r\n 선택한 성별은 %s 입니다."),
+				Check[0] ? hobby[0] : TEXT(""), Check[1] ? hobby[1] : TEXT(""), Check[2] ? hobby[2] : TEXT(""), Check[3] ? hobby[3] : TEXT(""), gender[Radio]);
+
+			SetDlgItemText(hDlg, IDC_EDIT_OUTPUT, output);
+			break;
+		case IDCANCEL:
+			EndDialog(hDlg, 0);
+		}
+		break;
+	}
+	return (INT_PTR)FALSE;
+}
+
+INT_PTR CALLBACK DlgProcShapes(HWND hDlg, UINT iMsg, WPARAM wParam, LPARAM lParam)
+{
+	enum SHAPE
+	{
+		SHAPE_NONE,
+		SHAPE_RECT,
+		SHAPE_CIRCLE,
+	};
+	static SHAPE state;
+
+	switch (iMsg)
+	{
+	case WM_INITDIALOG:
+		state = SHAPE_NONE;
+		return (INT_PTR)TRUE;
+
+	case WM_COMMAND:
+		switch (LOWORD(wParam))
+		{
+		case IDC_RADIO_RECT:
+			state = SHAPE_RECT;
+			break;
+		case IDC_RADIO_ELLIPSE:
+			state = SHAPE_CIRCLE;
+			break;
+		case IDOK:
+			EndDialog(hDlg, 0);
+			break;
+		case IDCANCEL:
+			EndDialog(hDlg, 0);
+			break;
+		}
+		InvalidateRect(hDlg, NULL, TRUE);
+
+	case WM_PAINT:
+		PAINTSTRUCT ps;
+		HDC hdc = BeginPaint(hDlg, &ps);
+
+		if (state == SHAPE_RECT) { Rectangle(hdc, 10, 10, 100, 100); }
+		else if (state == SHAPE_CIRCLE) { Ellipse(hdc, 10, 10, 100, 100); }
+
+		EndPaint(hDlg, &ps);
+		break;
+	}
+	return (INT_PTR)FALSE;
+}
+
+INT_PTR CALLBACK DlgListbox(HWND hDlg, UINT iMsg, WPARAM wParam, LPARAM lParam)
+{
+	static HWND hList;
+	static int selection;
+	TCHAR name[20];
+
+	switch (iMsg) {
+	case WM_INITDIALOG:
+		hList = GetDlgItem(hDlg, IDC_LIST1);
+		return (INT_PTR)TRUE;
+
+	case WM_COMMAND:
+		switch (LOWORD(wParam)) 
+		{
+		case IDC_JOIN:
+			GetDlgItemText(hDlg, IDC_NAME, name, 20);
+			if (_tcscmp(name, TEXT(""))) SendMessage(hList, LB_ADDSTRING, 0, (LPARAM)name);
+			break;
+
+		case IDC_WITHDRAWAL:
+			SendMessage(hList, LB_DELETESTRING, selection, 0);
+			break;
+
+		case IDC_LIST1:
+			if (HIWORD(wParam) == LBN_SELCHANGE)
+				selection = (int)SendMessage(hList, LB_GETCURSEL, 0, 0);
+			break;
+
+		case IDOK:
+		case IDCANCEL:
+			EndDialog(hDlg, 0);
+			break;
+		}
+		break;
 	}
 	return (INT_PTR)FALSE;
 }
