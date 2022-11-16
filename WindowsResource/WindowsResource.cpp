@@ -114,7 +114,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		//DialogBox(hInst, MAKEINTRESOURCE(IDD_DIALOG_CALC), hWnd, DlgProcCalc);
 		//DialogBox(hInst, MAKEINTRESOURCE(IDD_DIALOG_CHECK_DIALOG), hWnd, DlgProcCheckbox);
 		//DialogBox(hInst, MAKEINTRESOURCE(IDD_DIALOG_SHAPES), hWnd, DlgProcShapes);
-		DialogBox(hInst, MAKEINTRESOURCE(IDD_LISTBOX), hWnd, DlgListbox);
+		//DialogBox(hInst, MAKEINTRESOURCE(IDD_LISTBOX), hWnd, DlgListbox);
+		DialogBox(hInst, MAKEINTRESOURCE(IDD_LISTBOX_COLORPARTY), hWnd, DlgListboxColorParty);
 		break;
 
 	case WM_COMMAND:
@@ -393,6 +394,111 @@ INT_PTR CALLBACK DlgListbox(HWND hDlg, UINT iMsg, WPARAM wParam, LPARAM lParam)
 			break;
 		}
 		break;
+	}
+	return (INT_PTR)FALSE;
+}
+
+INT_PTR CALLBACK DlgListboxColorParty(HWND hDlg, UINT iMsg, WPARAM wParam, LPARAM lParam)
+{
+	enum PEN_COLOR
+	{
+		PEN_COLOR_BLACK,
+		PEN_COLOR_RED,
+		PEN_COLOR_BLUE,
+	};
+	enum BRUSH_COLOR
+	{
+		BRUSH_COLOR_BLACK,
+		BRUSH_COLOR_WHITE,
+		BRUSH_COLOR_BLUE,
+	};
+
+	static int pen;
+	static int brush;
+	HDC hdc;
+	HPEN myPen, oldPen;
+	HBRUSH myBrush, oldBrush;
+
+
+	switch(iMsg)
+	{
+	case WM_INITDIALOG:
+		pen = PEN_COLOR_RED;
+		brush = BRUSH_COLOR_BLACK;
+		return (INT_PTR)TRUE;
+
+	case WM_PAINT:
+		PAINTSTRUCT ps;
+		hdc = BeginPaint(hDlg, &ps);
+		myPen = CreatePen(BS_SOLID, 1, RGB(0, 255, 0));
+		myBrush = CreateSolidBrush(RGB(0, 255, 0));
+
+		switch (pen) 
+		{
+		case PEN_COLOR_BLACK:
+			myPen = CreatePen(BS_SOLID, 1, RGB(0, 0, 0));
+			break;
+		case PEN_COLOR_RED:
+			myPen = CreatePen(BS_SOLID, 1, RGB(255, 0, 0));
+			break;
+		case PEN_COLOR_BLUE:
+			myPen = CreatePen(BS_SOLID, 1, RGB(0, 0, 255));
+			break;
+		default:
+			break;
+		}
+
+		switch (brush)
+		{
+		case BRUSH_COLOR_BLACK:
+			myBrush = CreateSolidBrush(RGB(0, 0, 0));
+			break;
+		case BRUSH_COLOR_WHITE:
+			myBrush = CreateSolidBrush(RGB(255, 255, 255));
+			break;
+		case BRUSH_COLOR_BLUE:
+			myBrush = CreateSolidBrush(RGB(0, 0, 255));
+			break;
+		default:
+			break;
+		}
+
+		oldPen = (HPEN)SelectObject(hdc, myPen);
+		oldBrush = (HBRUSH)SelectObject(hdc, myBrush);
+
+		Rectangle(hdc, 12, 120, 284, 200);
+
+		EndPaint(hDlg, &ps);
+		break;
+
+		//SendMessage(hList, CB_GETCURSEL, selection, 0);
+
+	case WM_COMMAND:
+		int id = LOWORD(wParam);
+		//int selection = SendMessage(GetDlgItem(hDlg, id), BM_GETCHECK, 0, 0);
+
+		switch (LOWORD(wParam))
+		{
+		case IDC_R_PEN1:
+			pen = PEN_COLOR_BLACK;
+			break;
+		case IDC_R_PEN2:
+			pen = PEN_COLOR_RED;
+			break;
+		case IDC_R_PEN3:
+			pen = PEN_COLOR_BLUE;
+			break;
+		case IDC_R_BRUSH1:
+			brush = BRUSH_COLOR_BLACK;
+			break;
+		case IDC_R_BRUSH2:
+			brush = BRUSH_COLOR_WHITE;
+			break;
+		case IDC_R_BRUSH3:
+			brush = BRUSH_COLOR_BLUE;
+			break;
+		}
+		InvalidateRect(hDlg, NULL, NULL);
 	}
 	return (INT_PTR)FALSE;
 }

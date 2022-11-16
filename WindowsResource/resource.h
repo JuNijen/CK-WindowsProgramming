@@ -21,6 +21,7 @@
 #define IDD_DIALOG_SHAPES               135
 #define IDD_DIALOG3                     136
 #define IDD_LISTBOX                     136
+#define IDD_LISTBOX_COLORPARTY          137
 #define IDC_BUTTON_END                  1000
 #define IDC_BUTTON_PRINT                1001
 #define IDC_BUTTON_PAUSE                1001
@@ -55,6 +56,13 @@
 #define IDC_LIST1                       1028
 #define IDC_JOIN                        1029
 #define IDC_NAME                        1030
+#define IDC_R_PEN1                      1031
+#define IDC_R_PEN2                      1032
+#define IDC_R_PEN3                      1033
+#define IDC_R_BRUSH1                    1034
+#define IDC_R_BRUSH2                    1035
+#define IDC_RADIO6                      1036
+#define IDC_R_BRUSH3                    1036
 #define ID_32771                        32771
 #define ID_32772                        32772
 #define ID_32773                        32773
@@ -96,9 +104,9 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
-#define _APS_NEXT_RESOURCE_VALUE        137
+#define _APS_NEXT_RESOURCE_VALUE        138
 #define _APS_NEXT_COMMAND_VALUE         32802
-#define _APS_NEXT_CONTROL_VALUE         1031
+#define _APS_NEXT_CONTROL_VALUE         1032
 #define _APS_NEXT_SYMED_VALUE           110
 #endif
 #endif
