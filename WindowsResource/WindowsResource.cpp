@@ -104,7 +104,9 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	static int status;
-
+	HDC hdc, MemDC;
+	PAINTSTRUCT ps;
+	HBITMAP MyBitmap, OldBitmap;
 
 	switch (message)
 	{
@@ -115,7 +117,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		//DialogBox(hInst, MAKEINTRESOURCE(IDD_DIALOG_CHECK_DIALOG), hWnd, DlgProcCheckbox);
 		//DialogBox(hInst, MAKEINTRESOURCE(IDD_DIALOG_SHAPES), hWnd, DlgProcShapes);
 		//DialogBox(hInst, MAKEINTRESOURCE(IDD_LISTBOX), hWnd, DlgListbox);
-		DialogBox(hInst, MAKEINTRESOURCE(IDD_LISTBOX_COLORPARTY), hWnd, DlgListboxColorParty);
+		//DialogBox(hInst, MAKEINTRESOURCE(IDD_LISTBOX_COLORPARTY), hWnd, DlgListboxColorParty);
+		//vsDialogBox(hInst, MAKEINTRESOURCE(IDD_LISTBOX_COLORPARTY), hWnd, DlgListboxColorParty);
+		DialogBox(hInst, MAKEINTRESOURCE(IDD_PROC3), hWnd, DlgProc3);
 		break;
 
 	case WM_COMMAND:
@@ -124,15 +128,16 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		break;
 
 	case WM_PAINT:
-	{
-		PAINTSTRUCT ps;
-		HDC hdc = BeginPaint(hWnd, &ps);
-		RGB_Shapes(hdc, status);
-
+		hdc = BeginPaint(hWnd, &ps);
+		MemDC = CreateCompatibleDC(hdc);
+		MyBitmap = LoadBitmap(hInst, MAKEINTRESOURCE(IDB_BITMAP2));
+		OldBitmap = (HBITMAP)SelectObject(MemDC, MyBitmap);
+		BitBlt(hdc, 0, 0, 279, 178, MemDC, 0, 0, SRCCOPY);
+		SelectObject(MemDC, OldBitmap);
+		DeleteObject(MyBitmap);
+		DeleteDC(MemDC);
 		EndPaint(hWnd, &ps);
-	}
-	break;
-
+		return 0;
 	case WM_DESTROY:
 		PostQuitMessage(0);
 		break;
@@ -500,5 +505,103 @@ INT_PTR CALLBACK DlgListboxColorParty(HWND hDlg, UINT iMsg, WPARAM wParam, LPARA
 		}
 		InvalidateRect(hDlg, NULL, NULL);
 	}
+	return (INT_PTR)FALSE;
+}
+
+INT_PTR CALLBACK DlgDancingBall(HWND hDlg, UINT iMsg, WPARAM wParam, LPARAM lParam)
+{
+	return (INT_PTR)FALSE;
+}
+
+INT_PTR CALLBACK DlgProc3(HWND hDlg, UINT iMsg, WPARAM wParam, LPARAM lParam)
+{
+	enum GENDER
+	{
+		GENDER_FEMALE,
+		GENDER_MALE,
+	};
+
+	TCHAR sName[6];				//IDC_EDIT_NAME
+	TCHAR sPhoneNumber[12]; //IDC_EDIT_PHONE_NUMBER
+	TCHAR sBirthY[6];			//IDC_COMBO_BIRTH_Y
+	int nGender = (int)GENDER_FEMALE; //IDC_RADIO_M, F
+	static int selection;
+	static HWND hList;
+	static HWND hCombo;
+	HDC hdc;
+
+	switch (iMsg)
+	{
+	case WM_INITDIALOG:
+		hList = GetDlgItem(hDlg, IDC_LIST1);
+		hCombo = GetDlgItem(hDlg, IDC_COMBO_BIRTH_Y);
+
+		SetDlgItemText(hDlg, IDC_EDIT_NAME, _T(""));
+		SetDlgItemText(hDlg, IDC_EDIT_PHONE_NUMBER, _T(""));
+		CheckRadioButton(hDlg, IDC_RADIO_F, IDC_RADIO_M, IDC_RADIO_F);
+		selection = 0;
+		nGender = (int)GENDER_FEMALE;
+
+		
+		for (int i = 1970; i < 2010; i++)
+		{
+			_stprintf_s(sBirthY, _T("%d"), i);
+			SendMessage(hCombo, CB_ADDSTRING, 0, (LPARAM)sBirthY);
+		}
+		return (INT_PTR)TRUE;
+
+	case WM_PAINT:
+		PAINTSTRUCT ps;
+		hdc = BeginPaint(hDlg, &ps); 
+
+		EndPaint(hDlg, &ps);
+		break;
+	case WM_COMMAND:
+		switch (LOWORD(wParam))
+		{
+		case IDC_LIST1:
+			if (HIWORD(wParam) == LBN_SELCHANGE)
+				selection = (int)SendMessage(hList, LB_GETCURSEL, 0, 0);
+			break;
+		case ID_JOIN:
+			GetDlgItemText(hDlg, IDC_EDIT_NAME, sName, 6);
+			GetDlgItemText(hDlg, IDC_EDIT_PHONE_NUMBER, sPhoneNumber, 12);
+			GetDlgItemText(hDlg, IDC_COMBO_BIRTH_Y, sBirthY, 6);
+
+			if (_tcscmp(sName, TEXT(""))) 
+			{
+				int year = SendMessage(hCombo, CB_GETCURSEL, 0, 0);
+				TCHAR sGender[][30] = { _T("여자"),_T("남자") };
+				TCHAR output[50];
+
+				GetDlgItemText(hDlg, IDC_EDIT_PHONE_NUMBER, sPhoneNumber, 12);
+
+				_stprintf_s(sBirthY, _T("%d"), 1970 + year);
+				_stprintf_s(output, _T("이름:%s, 전화번호:%s, 성별:%s, 출생연도:%s"), sName, sPhoneNumber, sGender[nGender], sBirthY);
+				SendMessage(hList, LB_ADDSTRING, 0, (LPARAM)output);
+			}
+			break;
+		case ID_REMOVE:
+			SendMessage(hList, LB_DELETESTRING, selection, 0);
+			break;
+		case ID_CANCEL:
+			EndDialog(hDlg, 0);
+			break;
+		default:
+			break;
+		}
+		break;
+	case WM_DESTROY:
+		break;
+	default:
+		break;
+	}
+
+	return (INT_PTR)FALSE;
+}
+
+
+INT_PTR CALLBACK DlgDancingBall2(HWND hDlg, UINT iMsg, WPARAM wParam, LPARAM lParam)
+{
 	return (INT_PTR)FALSE;
 }

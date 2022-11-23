@@ -3,6 +3,7 @@
 // WindowsResource.rc에서 사용되고 있습니다.
 //
 #define IDC_MYICON                      2
+#define ID_CANCEL                       3
 #define IDD_WINDOWSRESOURCE_DIALOG      102
 #define IDS_APP_TITLE                   103
 #define IDD_ABOUTBOX                    103
@@ -22,6 +23,8 @@
 #define IDD_DIALOG3                     136
 #define IDD_LISTBOX                     136
 #define IDD_LISTBOX_COLORPARTY          137
+#define IDD_PROC3                       138
+#define IDB_BITMAP2                     140
 #define IDC_BUTTON_END                  1000
 #define IDC_BUTTON_PRINT                1001
 #define IDC_BUTTON_PAUSE                1001
@@ -58,11 +61,18 @@
 #define IDC_NAME                        1030
 #define IDC_R_PEN1                      1031
 #define IDC_R_PEN2                      1032
+#define IDC_RADIO_F                     1032
 #define IDC_R_PEN3                      1033
+#define IDC_RADIO_M                     1033
 #define IDC_R_BRUSH1                    1034
+#define IDC_COMBO_BIRTH_Y               1034
 #define IDC_R_BRUSH2                    1035
+#define ID_REMOVE                       1035
 #define IDC_RADIO6                      1036
 #define IDC_R_BRUSH3                    1036
+#define ID_JOIN                         1036
+#define IDC_EDIT_NAME                   1037
+#define IDC_EDIT_PHONE_NUMBER           1038
 #define ID_32771                        32771
 #define ID_32772                        32772
 #define ID_32773                        32773
@@ -104,9 +114,9 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
-#define _APS_NEXT_RESOURCE_VALUE        138
+#define _APS_NEXT_RESOURCE_VALUE        141
 #define _APS_NEXT_COMMAND_VALUE         32802
-#define _APS_NEXT_CONTROL_VALUE         1032
+#define _APS_NEXT_CONTROL_VALUE         1039
 #define _APS_NEXT_SYMED_VALUE           110
 #endif
 #endif
