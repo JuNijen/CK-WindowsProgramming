@@ -107,6 +107,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	HDC hdc, MemDC;
 	PAINTSTRUCT ps;
 	HBITMAP MyBitmap, OldBitmap;
+	int imgWidth, imgHeight, imgX, imgY;
 
 	switch (message)
 	{
@@ -128,7 +129,21 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 		RECT rt;
 		GetClientRect(hWnd, &rt);
-		StretchBlt(hdc, 0, 0, rt.right, rt.bottom, MemDC, 0, 0, 612, 571, SRCCOPY);
+
+		imgWidth = rt.right / 5;
+		imgHeight = rt.bottom / 5;
+
+		for (int countX = 0; countX < 5; countX ++) 
+		{
+			imgX = imgWidth * countX;
+
+			for (int countY = 0; countY < 5; countY++)
+			{
+				imgY = imgHeight * countY;
+
+				StretchBlt(hdc, imgX, imgY, imgX + imgWidth, imgY + imgHeight, MemDC, 0, 0, 612, 571, SRCCOPY);
+			}
+		}
 
 		SelectObject(MemDC, OldBitmap);
 		DeleteObject(MyBitmap);
