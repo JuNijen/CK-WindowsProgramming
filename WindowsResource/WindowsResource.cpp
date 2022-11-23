@@ -128,8 +128,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 		RECT rt;
 		GetClientRect(hWnd, &rt);
-		StretchBlt(hdc, 0, 0, 612, 571, MemDC, 0, 0, rt.right, rt.bottom, SRCCOPY);
-		BitBlt(hdc, 0, 0, 612, 571, MemDC, rt.right, rt.bottom, SRCCOPY);
+		StretchBlt(hdc, 0, 0, rt.right, rt.bottom, MemDC, 0, 0, 612, 571, SRCCOPY);
 
 		SelectObject(MemDC, OldBitmap);
 		DeleteObject(MyBitmap);
