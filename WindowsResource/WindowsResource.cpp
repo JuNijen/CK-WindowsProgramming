@@ -125,7 +125,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 		MyBitmap = LoadBitmap(hInst, MAKEINTRESOURCE(IDB_BITMAP2));
 		OldBitmap = (HBITMAP)SelectObject(MemDC, MyBitmap);
-		BitBlt(hdc, 0, 0, 279, 178, MemDC, 0, 0, SRCCOPY);
+
+		RECT rt;
+		GetClientRect(hWnd, &rt);
+		StretchBlt(hdc, 0, 0, 612, 571, MemDC, 0, 0, rt.right, rt.bottom, SRCCOPY);
+		BitBlt(hdc, 0, 0, 612, 571, MemDC, rt.right, rt.bottom, SRCCOPY);
 
 		SelectObject(MemDC, OldBitmap);
 		DeleteObject(MyBitmap);
@@ -135,6 +139,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		return 0;
 	case WM_DESTROY:
 		PostQuitMessage(0);
+		break;
+	case WM_SIZE:
 		break;
 
 	default:
