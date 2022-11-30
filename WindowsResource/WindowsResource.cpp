@@ -121,35 +121,20 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		break;
 
 	case WM_PAINT:
+		PAINTSTRUCT ps;
+		HDC hdc;
+		static RECT rtClient;
 		hdc = BeginPaint(hWnd, &ps);
-		MemDC = CreateCompatibleDC(hdc);
+		GetClientRect(hWnd, &rtClient);
+		for (int i = 0; i < 30; i++) {
+			Rectangle(hdc, rand() % rtClient.right, rand() % rtClient.bottom, rand() %
 
-		MyBitmap = LoadBitmap(hInst, MAKEINTRESOURCE(IDB_BITMAP2));
-		OldBitmap = (HBITMAP)SelectObject(MemDC, MyBitmap);
+				rtClient.right, rand() % rtClient.bottom);
 
-		RECT rt;
-		GetClientRect(hWnd, &rt);
-
-		imgWidth = rt.right / 5;
-		imgHeight = rt.bottom / 5;
-
-		for (int countX = 0; countX < 5; countX ++) 
-		{
-			imgX = imgWidth * countX;
-
-			for (int countY = 0; countY < 5; countY++)
-			{
-				imgY = imgHeight * countY;
-				StretchBlt(hdc, imgX, imgY, imgWidth, imgHeight, MemDC, 0, 0, 612, 571, SRCCOPY);
-			}
+			Sleep(30);
 		}
-
-		SelectObject(MemDC, OldBitmap);
-		DeleteObject(MyBitmap);
-		DeleteDC(MemDC);
-
 		EndPaint(hWnd, &ps);
-		return 0;
+		break;
 	case WM_DESTROY:
 		PostQuitMessage(0);
 		break;
