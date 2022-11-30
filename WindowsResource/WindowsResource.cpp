@@ -106,42 +106,124 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	static int status;
 	PAINTSTRUCT ps;
 	HDC hdc, memDC;
-	static HBITMAP catBitmap, oldCatBitmap;
-	static HBITMAP mouseBitmap, oldMouseBitmap;
-	static int catX, catY, mx, my;
-	static bool mouseOn = false;
+	static HBITMAP bgBitmap, oldBgBitmap;
+	static RECT rect;
+
+	static TCHAR* targetTextStr[64];
+	static POINT* targetTextPos;
+	static int respawnCounter;
+	const int respawnTiming = 250;
+	const int randomTextCount = 5;
+	const int falingRepeatTime = 45;
+
+	static TCHAR userInput[64];
+	const int chatWidth = 250;
+	const int chatHeight = 30;
+	const int chatHeightEmpty = 30;
+	static int textLength, backspace;
+	static int chatX, chatY;
+	static bool check = false;
+
 
 	switch (message)
 	{
 	case WM_CREATE:
-		mx = -1;
-		my = -1;
-		catBitmap = LoadBitmap(hInst, MAKEINTRESOURCE(IDB_BITMAP_CAT));
-		mouseBitmap = LoadBitmap(hInst, MAKEINTRESOURCE(IDB_BITMAP_MOUSE));
+		bgBitmap = LoadBitmap(hInst, MAKEINTRESOURCE(IDB_BITMAP_GAME_BG));
+		GetClientRect(hWnd, &rect);
+		respawnCounter = 0;
+		
+		for (int i = 0; i < randomTextCount; i++) 
+		{
+			targetTextStr[i] = new TCHAR[randomTextCount];
+		}
+
+		targetTextStr[0] = TEXT("Ctrl");
+		targetTextStr[1] = TEXT("Alt");
+		targetTextStr[2] = TEXT("Shift");
+		targetTextStr[3] = TEXT("Tab");
+		targetTextStr[4] = TEXT("Insert");
+
+		targetTextPos = new POINT[randomTextCount];
+		for (int i = 0; i < randomTextCount; i++)
+			targetTextPos[i].x = -100;
+
+		textLength = lstrlen(userInput);
+		backspace = textLength;
+		userInput[0] = *L"  ";
+
+		targetTextPos[0].x = rand() % rect.right;
+		targetTextPos[0].y = 0;
+
+		SetTimer(hWnd, 1, falingRepeatTime, NULL);
 		break;
 
-	case WM_LBUTTONDOWN:
-		mouseOn = true;
-		mx = LOWORD(lParam);
-		my = HIWORD(lParam);
-		InvalidateRect(hWnd, NULL, TRUE);
-		SetTimer(hWnd, 1, 100, NULL);
-		//DialogBox(hInst, MAKEINTRESOURCE(IDD_PROC3), hWnd, DlgProc3);
-		break;
-	case WM_MOUSEMOVE:
-		if (mouseOn) 
+	case WM_KEYDOWN:
+		switch (wParam) 
 		{
-			mx = LOWORD(lParam);
-			my = HIWORD(lParam);
-			InvalidateRect(hWnd, NULL, TRUE);
-			SetTimer(hWnd, 1, 100, NULL);
+		case VK_RETURN:
+			for(int i = 0; i < randomTextCount; i++)
+			{				
+				for (int j = 0; j < textLength; j++) 
+				{
+					if (targetTextStr[i][j] == userInput[j])
+					{
+						check = true;
+					}
+					else 
+					{
+						check = false;
+						break;
+					}
+				}
+				if (check) 
+				{
+					for (int j = 0; j < randomTextCount; j++)
+					{
+						if (targetTextPos[j].x < 0 || targetTextPos[j].y > rect.bottom)
+						{
+							targetTextPos[j].x = rand() % rect.right;
+							targetTextPos[j].y = 0;
+							break;
+						}
+					}
+					respawnCounter = 0;
+
+					targetTextPos[i].x = -100;
+					targetTextPos[i].y = 0;
+					targetTextStr[i] = TEXT("COMPLETE!");
+
+					break;
+				}
+			}
+
+			userInput[0] = '\0';
+			userInput[1] = '\0';
+			textLength = lstrlen(userInput);
+			break;
+		case VK_BACK:
+			if (textLength-1 >= 0) 
+			{
+				userInput[backspace] = (TCHAR)"";
+				userInput[backspace--] = '\0';
+				textLength = lstrlen(userInput);
+			}
+			break;
 		}
 		break;
-	case WM_LBUTTONUP:
-		mouseOn = false;
-		mx = -1;
-		my = -1;
-		KillTimer(hWnd, 1);
+	case WM_CHAR:
+		if (textLength + 2 >= chatWidth/4)
+		{
+			userInput[0] = '\0';
+			textLength = lstrlen(userInput);
+		}
+		if (wParam != VK_BACK && wParam != VK_RETURN)
+		{
+			textLength = lstrlen(userInput);
+			backspace = textLength;
+
+			userInput[textLength] = (TCHAR)wParam;
+			userInput[textLength + 1] = '\0';
+		}
 		break;
 
 	case WM_COMMAND:
@@ -152,20 +234,58 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	case WM_PAINT:
 		PAINTSTRUCT ps;
 		hdc = BeginPaint(hWnd, &ps);
-		memDC = CreateCompatibleDC(hdc);
+		GetClientRect(hWnd, &rect);
 
-		if (mx + my > 0) 
+		if (respawnCounter >= respawnTiming)
 		{
-			DrawBitmap(hdc, mx, my, mouseBitmap);
+			for (int i = 0; i < randomTextCount; i++)
+			{
+				if (targetTextPos[i].x < 0 || targetTextPos[i].y > rect.bottom)
+				{
+					targetTextPos[i].x = rand() % rect.right;
+					targetTextPos[i].y = 0;
+					break;
+				}
+			}
+			respawnCounter = 0;
 		}
-		DrawBitmap(hdc, catX, catY, catBitmap);
-		DeleteDC(memDC);
 
+		memDC = CreateCompatibleDC(hdc);
+		oldBgBitmap = (HBITMAP)SelectObject(memDC, bgBitmap);
+		StretchBlt(hdc, 0, 0, rect.right, rect.bottom, memDC, 0, 0, 1200, 627, SRCCOPY);
+
+		for (int i = 0; i < randomTextCount; i++)
+		{
+			TextOut(hdc, targetTextPos[i].x - chatWidth , targetTextPos[i].y, targetTextStr[i], lstrlen(targetTextStr[i]));
+		}
+
+		chatX = rect.right /2;
+		chatY = rect.bottom - chatHeightEmpty;
+		Rectangle(hdc, chatX - chatWidth, chatY - chatHeight, chatX + chatWidth, chatY + chatHeight);
+
+		// 눈속임일 뿐이고, 잘못되었다고 생각하는 부분입니다.
+		if (textLength > 0) 
+		{
+			if (textLength == backspace) 
+			{
+				TextOut(hdc, chatX - (textLength * 4), chatY, (TCHAR*)userInput, textLength + 1);
+			}
+			else
+			{
+				TextOut(hdc, chatX - (textLength * 4), chatY, (TCHAR*)userInput, textLength);
+			}
+		}
+
+		DeleteDC(memDC);
 		EndPaint(hWnd, &ps);
 		break;
+
 	case WM_TIMER:
-		catX += ((mx - catX) / 10);
-		catY += ((my - catY) / 10);
+		for (int i = 0; i < randomTextCount; i++)
+		{
+			targetTextPos[i].y++;
+		}
+		respawnCounter++;
 		InvalidateRect(hWnd, NULL, TRUE);
 		break;
 
@@ -178,168 +298,31 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	}
 }
 
-void DrawBitmap(HDC hdc, int x, int y, HBITMAP hBit)
-{
-	HDC MemDC;
-	HBITMAP OldBitmap;
-	BITMAP bit;
-	int bx, by;
-
-	MemDC = CreateCompatibleDC(hdc);
-	OldBitmap = (HBITMAP)SelectObject(MemDC, hBit);
-	GetObject(hBit, sizeof(BITMAP), &bit);
-
-	bx = bit.bmWidth;
-	by = bit.bmHeight;
-
-	BitBlt(hdc, x, y, bx, by, MemDC, 0, 0, SRCCOPY);
-	SelectObject(MemDC, OldBitmap);
-	DeleteDC(MemDC);
-}
-
-
-void RGB_Shapes(HDC hdc, int status)
-{
-	static HBRUSH hB, oldB;
-	static HPEN hP, oldP;
-
-	switch (status)
-	{
-	case ID_LINE_RED:
-		hB = CreateSolidBrush(RGB(255, 0, 0));
-		break;
-	case ID_LINE_GREEN:
-		hB = CreateSolidBrush(RGB(0, 255, 0));
-		break;
-	case ID_LINE_BLUE:
-		hB = CreateSolidBrush(RGB(0, 0, 255));
-		break;
-	}
-
-	if (status == ID_CIRCLE_RED || status == ID_SQUARE_RED) hB = CreateSolidBrush(RGB(255, 0, 0));
-	else if (status == ID_CIRCLE_GREEN || status == ID_SQUARE_GREEN) hB = CreateSolidBrush(RGB(0, 255, 0));
-	else if (status == ID_CIRCLE_BLUE || status == ID_SQUARE_BLUE) hB = CreateSolidBrush(RGB(0, 0, 255));
-	else if (status == ID_LINE_RED) hP = CreatePen(BS_SOLID, 1, RGB(255, 0, 0));
-	else if (status == ID_LINE_GREEN) hP = CreatePen(BS_SOLID, 1, RGB(0, 255, 0));
-	else if (status == ID_LINE_BLUE) hP = CreatePen(BS_SOLID, 1, RGB(0, 0, 255));
-
-	oldB = (HBRUSH)SelectObject(hdc, hB);
-	oldP = (HPEN)SelectObject(hdc, hP);
-
-	switch (status)
-	{
-	case ID_CIRCLE_RED:
-	case ID_CIRCLE_GREEN:
-	case ID_CIRCLE_BLUE:
-		Ellipse(hdc, 100, 100, 200, 200);
-		break;
-	case ID_SQUARE_RED:
-	case ID_SQUARE_GREEN:
-	case ID_SQUARE_BLUE:
-		Rectangle(hdc, 100, 100, 200, 200);
-		break;
-	case ID_LINE_RED:
-	case ID_LINE_GREEN:
-	case ID_LINE_BLUE:
-		MoveToEx(hdc, 100, 100, NULL);
-		LineTo(hdc, 200, 200);
-		break;
-	}
-
-	SelectObject(hdc, oldB);
-	SelectObject(hdc, oldP);
-	DeleteObject(hB);
-	DeleteObject(hP);
-}
-
-INT_PTR CALLBACK DlgDancingBall(HWND hDlg, UINT iMsg, WPARAM wParam, LPARAM lParam)
-{
-	return (INT_PTR)FALSE;
-}
-
-INT_PTR CALLBACK DlgProc3(HWND hDlg, UINT iMsg, WPARAM wParam, LPARAM lParam)
-{
-	enum GENDER
-	{
-		GENDER_FEMALE,
-		GENDER_MALE,
-	};
-
-	TCHAR sName[6];				//IDC_EDIT_NAME
-	TCHAR sPhoneNumber[12]; //IDC_EDIT_PHONE_NUMBER
-	TCHAR sBirthY[6];			//IDC_COMBO_BIRTH_Y
-	int nGender = (int)GENDER_FEMALE; //IDC_RADIO_M, F
-	static int selection;
-	static HWND hList;
-	static HWND hCombo;
-	HDC hdc;
-
-	switch (iMsg)
-	{
-	case WM_INITDIALOG:
-		hList = GetDlgItem(hDlg, IDC_LIST1);
-		hCombo = GetDlgItem(hDlg, IDC_COMBO_BIRTH_Y);
-
-		SetDlgItemText(hDlg, IDC_EDIT_NAME, _T(""));
-		SetDlgItemText(hDlg, IDC_EDIT_PHONE_NUMBER, _T(""));
-		CheckRadioButton(hDlg, IDC_RADIO_F, IDC_RADIO_M, IDC_RADIO_F);
-		selection = 0;
-		nGender = (int)GENDER_FEMALE;
-
-		
-		for (int i = 1970; i < 2010; i++)
-		{
-			_stprintf_s(sBirthY, _T("%d"), i);
-			SendMessage(hCombo, CB_ADDSTRING, 0, (LPARAM)sBirthY);
-		}
-		return (INT_PTR)TRUE;
-
-	case WM_PAINT:
-		PAINTSTRUCT ps;
-		hdc = BeginPaint(hDlg, &ps); 
-
-		EndPaint(hDlg, &ps);
-		break;
-	case WM_COMMAND:
-		switch (LOWORD(wParam))
-		{
-		case IDC_LIST1:
-			if (HIWORD(wParam) == LBN_SELCHANGE)
-				selection = (int)SendMessage(hList, LB_GETCURSEL, 0, 0);
-			break;
-		case ID_JOIN:
-			GetDlgItemText(hDlg, IDC_EDIT_NAME, sName, 6);
-			GetDlgItemText(hDlg, IDC_EDIT_PHONE_NUMBER, sPhoneNumber, 12);
-			GetDlgItemText(hDlg, IDC_COMBO_BIRTH_Y, sBirthY, 6);
-
-			if (_tcscmp(sName, TEXT(""))) 
-			{
-				int year = SendMessage(hCombo, CB_GETCURSEL, 0, 0);
-				TCHAR sGender[][30] = { _T("여자"),_T("남자") };
-				TCHAR output[50];
-
-				GetDlgItemText(hDlg, IDC_EDIT_PHONE_NUMBER, sPhoneNumber, 12);
-
-				_stprintf_s(sBirthY, _T("%d"), 1970 + year);
-				_stprintf_s(output, _T("이름:%s, 전화번호:%s, 성별:%s, 출생연도:%s"), sName, sPhoneNumber, sGender[nGender], sBirthY);
-				SendMessage(hList, LB_ADDSTRING, 0, (LPARAM)output);
-			}
-			break;
-		case ID_REMOVE:
-			SendMessage(hList, LB_DELETESTRING, selection, 0);
-			break;
-		case ID_CANCEL:
-			EndDialog(hDlg, 0);
-			break;
-		default:
-			break;
-		}
-		break;
-	case WM_DESTROY:
-		break;
-	default:
-		break;
-	}
-
-	return (INT_PTR)FALSE;
-}
+//TCHAR* ReadTextFile(int arraySize, int charSize)
+//{
+//	static TCHAR* targetTextStr[64];
+//	char* result = new char[charSize];
+//	//char** result = new char*[arraySize];
+//	//for (int i = 0; i < arraySize; i++)
+//	//{
+//	//	result[i] = new char[charSize];
+//	//}
+//
+//	//Opening the file
+//	ifstream inputfile("words.txt");
+//
+//	if (!inputfile.is_open()) 
+//	{
+//		cout << "Error opening file";
+//	}
+//
+//	//Defining the loop for getting input from the file
+//
+//	for (int i = 0; i < arraySize; i++) //Outer loop for rows
+//	{
+//		inputfile >> result;  //Take input from file and put into myArray
+//		WideCharToMultiByte(CP_ACP, 0, targetTextStr[i], charSize, result, charSize, NULL, NULL);
+//	}
+//
+//	return *targetTextStr;
+//}

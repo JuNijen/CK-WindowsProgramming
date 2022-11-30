@@ -27,6 +27,7 @@
 #define IDB_BITMAP2                     140
 #define IDB_BITMAP_CAT                     141
 #define IDB_BITMAP_MOUSE                     142
+#define IDB_BITMAP_GAME_BG                     143
 #define IDC_BUTTON_END                  1000
 #define IDC_BUTTON_PRINT                1001
 #define IDC_BUTTON_PAUSE                1001

@@ -1,6 +1,10 @@
 #pragma once
 
 #include "resource.h"
+#include<iostream>
+#include<fstream>
+
+using namespace std;
 
 // 이 코드 모듈에 포함된 함수의 선언을 전달합니다:
 ATOM                MyRegisterClass(HINSTANCE hInstance);
@@ -11,8 +15,7 @@ INT_PTR CALLBACK	DlgProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK DlgDancingBall(HWND hDlg, UINT iMsg, WPARAM wParam, LPARAM lParam);
 INT_PTR CALLBACK DlgProc3(HWND hDlg, UINT iMsg, WPARAM wParam, LPARAM lParam);
 
-void DrawBitmap(HDC hdc, int x, int y, HBITMAP hBit);
-void RGB_Shapes(HDC hdc, int status);
+TCHAR* ReadTextFile(int arraySize, int charSize);
 
 // 전역 변수:
 #define MAX_LOADSTRING 100
