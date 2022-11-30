@@ -25,6 +25,8 @@
 #define IDD_LISTBOX_COLORPARTY          137
 #define IDD_PROC3                       138
 #define IDB_BITMAP2                     140
+#define IDB_BITMAP_CAT                     141
+#define IDB_BITMAP_MOUSE                     142
 #define IDC_BUTTON_END                  1000
 #define IDC_BUTTON_PRINT                1001
 #define IDC_BUTTON_PAUSE                1001

@@ -104,15 +104,44 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	static int status;
-	HDC hdc, MemDC;
 	PAINTSTRUCT ps;
-	HBITMAP MyBitmap, OldBitmap;
-	int imgWidth, imgHeight, imgX, imgY;
+	HDC hdc, memDC;
+	static HBITMAP catBitmap, oldCatBitmap;
+	static HBITMAP mouseBitmap, oldMouseBitmap;
+	static int catX, catY, mx, my;
+	static bool mouseOn = false;
 
 	switch (message)
 	{
+	case WM_CREATE:
+		mx = -1;
+		my = -1;
+		catBitmap = LoadBitmap(hInst, MAKEINTRESOURCE(IDB_BITMAP_CAT));
+		mouseBitmap = LoadBitmap(hInst, MAKEINTRESOURCE(IDB_BITMAP_MOUSE));
+		break;
+
 	case WM_LBUTTONDOWN:
-		DialogBox(hInst, MAKEINTRESOURCE(IDD_PROC3), hWnd, DlgProc3);
+		mouseOn = true;
+		mx = LOWORD(lParam);
+		my = HIWORD(lParam);
+		InvalidateRect(hWnd, NULL, TRUE);
+		SetTimer(hWnd, 1, 100, NULL);
+		//DialogBox(hInst, MAKEINTRESOURCE(IDD_PROC3), hWnd, DlgProc3);
+		break;
+	case WM_MOUSEMOVE:
+		if (mouseOn) 
+		{
+			mx = LOWORD(lParam);
+			my = HIWORD(lParam);
+			InvalidateRect(hWnd, NULL, TRUE);
+			SetTimer(hWnd, 1, 100, NULL);
+		}
+		break;
+	case WM_LBUTTONUP:
+		mouseOn = false;
+		mx = -1;
+		my = -1;
+		KillTimer(hWnd, 1);
 		break;
 
 	case WM_COMMAND:
@@ -122,28 +151,50 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 	case WM_PAINT:
 		PAINTSTRUCT ps;
-		HDC hdc;
-		static RECT rtClient;
 		hdc = BeginPaint(hWnd, &ps);
-		GetClientRect(hWnd, &rtClient);
-		for (int i = 0; i < 30; i++) {
-			Rectangle(hdc, rand() % rtClient.right, rand() % rtClient.bottom, rand() %
+		memDC = CreateCompatibleDC(hdc);
 
-				rtClient.right, rand() % rtClient.bottom);
-
-			Sleep(30);
+		if (mx + my > 0) 
+		{
+			DrawBitmap(hdc, mx, my, mouseBitmap);
 		}
+		DrawBitmap(hdc, catX, catY, catBitmap);
+		DeleteDC(memDC);
+
 		EndPaint(hWnd, &ps);
 		break;
+	case WM_TIMER:
+		catX += ((mx - catX) / 10);
+		catY += ((my - catY) / 10);
+		InvalidateRect(hWnd, NULL, TRUE);
+		break;
+
 	case WM_DESTROY:
 		PostQuitMessage(0);
-		break;
-	case WM_SIZE:
 		break;
 
 	default:
 		return DefWindowProc(hWnd, message, wParam, lParam);
 	}
+}
+
+void DrawBitmap(HDC hdc, int x, int y, HBITMAP hBit)
+{
+	HDC MemDC;
+	HBITMAP OldBitmap;
+	BITMAP bit;
+	int bx, by;
+
+	MemDC = CreateCompatibleDC(hdc);
+	OldBitmap = (HBITMAP)SelectObject(MemDC, hBit);
+	GetObject(hBit, sizeof(BITMAP), &bit);
+
+	bx = bit.bmWidth;
+	by = bit.bmHeight;
+
+	BitBlt(hdc, x, y, bx, by, MemDC, 0, 0, SRCCOPY);
+	SelectObject(MemDC, OldBitmap);
+	DeleteDC(MemDC);
 }
 
 
