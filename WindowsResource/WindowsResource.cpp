@@ -140,8 +140,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			for (int countY = 0; countY < 5; countY++)
 			{
 				imgY = imgHeight * countY;
-
-				StretchBlt(hdc, imgX, imgY, imgX + imgWidth, imgY + imgHeight, MemDC, 0, 0, 612, 571, SRCCOPY);
+				StretchBlt(hdc, imgX, imgY, imgWidth, imgHeight, MemDC, 0, 0, 612, 571, SRCCOPY);
 			}
 		}
 
